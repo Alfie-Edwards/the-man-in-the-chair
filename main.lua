@@ -3,7 +3,7 @@ require "asset_cache"
 assets = AssetCache.new()
 require "pixelcanvas"
 require "ui.view"
-require "screens.game"
+require "screens.main_menu"
 
 function love.load()
 
@@ -16,7 +16,7 @@ function love.load()
     canvas = PixelCanvas.new({ 768, 432 })
 
     view = View.new()
-    view:set_content(Game.new())
+    view:set_content(MainMenu.new())
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
