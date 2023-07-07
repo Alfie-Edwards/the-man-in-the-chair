@@ -1,0 +1,5 @@
+*.love
+*.exe
+*.lnk
+assets
+**/.DS_Store
