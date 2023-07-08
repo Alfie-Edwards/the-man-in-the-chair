@@ -81,7 +81,7 @@ function Game:draw()
         entity:draw(self.state)
     end
 
-    local result = raycast(self.state.level, 120, 70, angle, math.pi * 0.5, 1000)
+    local result = raycast(self.state.level, 240, 200, angle, math.pi * 0.5, 1000)
     for _, cell in pairs(result) do
         love.graphics.setColor({1, 0, 0, 0.2})
         local cell_size = self.state.level.cell_length_pixels

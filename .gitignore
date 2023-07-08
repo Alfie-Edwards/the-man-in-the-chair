@@ -3,3 +3,4 @@
 *.lnk
 assets
 **/.DS_Store
+.luarc.json

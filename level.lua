@@ -121,6 +121,9 @@ function Level.new(geom_img_file, tile_resources, solid_tile_types)
             obj.cells:add(Cell.new(x, y))
 
             local tile_type = obj:type_from_colour(obj:colour_at_pixel(x, y))
+            if string.match(tile_type, "Door") then
+                error(x..", "..y..": "..tile_type)
+            end
             assert(tile_type ~= nil)
             if obj:is_solid(tile_type) then
                 obj.solid_cells:add(Cell.new(x, y))
@@ -185,6 +188,18 @@ function Level:draw_tiles()
     end
 end
 
+function Level:draw_gridlines()
+    love.graphics.setColor({1, 0, 0, 1})
+    for col=0,self:width() do
+        love.graphics.line(col * self.cell_length_pixels, 0,
+                           col * self.cell_length_pixels, self:height_pixels())
+    end
+    for row=0,self:height() do
+        love.graphics.line(0, row * self.cell_length_pixels,
+                           self:width_pixels(), row * self.cell_length_pixels)
+    end
+end
+
 function Level:width()
     return self.geom:getWidth()
 end
@@ -212,6 +227,14 @@ end
 function Level:cell_out_of_bounds(x, y)
     return x < 0 or x >= self:width() or
            y < 0 or y >= self:height()
+end
+
+function Level:set_cell_solid(x, y, is_solid)
+    if is_solid then
+        self.solid_cells:add(Cell.new(x, y))
+    else
+        self.solid_cells:remove(Cell.new(x, y))
+    end
 end
 
 function Level:cell_solid(x, y)

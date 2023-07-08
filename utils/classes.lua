@@ -31,7 +31,7 @@ function is_type(inst, ...)
             -- Handle passing in a raw type.
             t = type_string(t)
         end
-        assert(type(t) == "string") 
+        assert(type(t) == "string")
         if is_basic_type(inst) then
             if type(inst) == t then
                 return true
@@ -53,7 +53,7 @@ function setup_class(class, super)
     end
     local name = get_key(_G, class)
     setmetatable(class,
-        { 
+        {
             __index = super,
             __name = name,
         }
