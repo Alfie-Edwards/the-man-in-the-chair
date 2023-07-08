@@ -232,8 +232,15 @@ function Level:set_door_cell_solid(x, y, is_solid)
     end
 end
 
-function Level:cell_solid(x, y)
-    return self.solid_cells[Cell.new(x, y)]
+function Level:cell_solid(x, y, doors_are_solid)
+    if doors_are_solid == nil then
+        doors_are_solid = true
+    end
+    local cell = Cell.new(x, y)
+    if doors_are_solid and self.solid_door_cells[cell] then
+        return true
+    end
+    return self.solid_cells[cell]
 end
 
 function Level:solid(pos)
