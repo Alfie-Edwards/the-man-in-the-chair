@@ -6,7 +6,7 @@ setup_class(Level)
 
 function Level.new()
 
-    obj = magic_new()
+    local obj = magic_new()
 
     obj.img = assets:get_image("map3")
     obj.geom = assets:get_image_data("level-geom", "bmp")
