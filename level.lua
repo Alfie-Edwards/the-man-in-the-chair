@@ -20,8 +20,7 @@ function Level.from_file(filename)
     local f = io.open(filename, "r")
 
     if not f then
-        print("couldn't fine file "..filename.."!")
-        assert(false)
+        error("couldn't fine file "..filename.."!")
     end
 
     local geom_img_file = nil
@@ -52,16 +51,14 @@ function Level.from_file(filename)
                 end
             end
             if not found then
-                print("tried to make unknown tile type "..line.." a solid tile type")
                 f:close()
-                assert(false)
+                error("tried to make unknown tile type "..line.." a solid tile type")
             end
 
             table.insert(solid_tile_types, line)
         else
-            print("too many empty lines in file!")
             f:close()
-            assert(false)
+            error("too many empty lines in file!")
         end
     end
 
