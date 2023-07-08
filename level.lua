@@ -121,9 +121,6 @@ function Level.new(geom_img_file, tile_resources, solid_tile_types)
             obj.cells:add(Cell.new(x, y))
 
             local tile_type = obj:type_from_colour(obj:colour_at_pixel(x, y))
-            if string.match(tile_type, "Door") then
-                error(x..", "..y..": "..tile_type)
-            end
             assert(tile_type ~= nil)
             if obj:is_solid(tile_type) then
                 obj.solid_cells:add(Cell.new(x, y))
