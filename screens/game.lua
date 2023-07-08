@@ -23,6 +23,13 @@ function Game.new(mode)
     local hacking_hud = Hacking.new(obj.state)
     obj:add_child(hacking_hud)
 
+
+    for _, entity in ipairs(obj.state.entities) do
+        if entity.behaviour then
+            entity.behaviour:start(entity, obj.state)
+        end
+    end
+
     return obj
 end
 
@@ -32,7 +39,6 @@ function Game:update(dt)
     for _, entity in ipairs(self.state.entities) do
         entity:update(dt, self.state)
     end
-    angle = angle + dt
 end
 
 function Game:draw()
@@ -49,13 +55,5 @@ function Game:draw()
         entity:draw(self.state)
     end
 
-    local result = raycast(self.state.level, 240, 200, angle, math.pi * 0.5, 1000)
-    for _, cell in pairs(result) do
-        love.graphics.setColor({1, 0, 0, 0.2})
-        local cell_size = self.state.level.cell_length_pixels
-        love.graphics.rectangle("fill", cell.x * cell_size, cell.y * cell_size, cell_size, cell_size)
-    end
-
     love.graphics.pop()
 end
-angle = 0

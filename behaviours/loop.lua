@@ -16,16 +16,27 @@ function Loop.new(...)
     return obj
 end
 
-function Loop:update(entity, dt, state)
-    if self.sub_behaviours[self.i]:update(entity, dt, state) then
-        self.i = self.i + 1
-        if self.i > #self.sub_behaviours then
-            self.i = 1
+function Loop:start(entity, state)
+    super().start(self, entity, state)
+    self:set_i(1)
+end
+
+function Loop:set_i(i)
+    self.i = i
+    self.sub_behaviours[i]:start(self.entity, self.state)
+end
+
+function Loop:update(dt)
+    if self.sub_behaviours[self.i]:update(dt) then
+        if self.i == #self.sub_behaviours then
+            self:set_i(1)
+        else
+            self:set_i(self.i + 1)
         end
     end
     return false
 end
 
-function Loop:draw(entity, state)
-    self.sub_behaviours[self.i]:draw(entity, state)
+function Loop:draw()
+    self.sub_behaviours[self.i]:draw(self.entity, self.state)
 end

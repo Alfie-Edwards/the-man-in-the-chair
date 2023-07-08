@@ -3,6 +3,7 @@ require "camera"
 require "entities.door"
 require "entities.george"
 require "entities.guard"
+require "entities.security_camera"
 
 GameState = {}
 setup_class(GameState, State)
@@ -34,6 +35,7 @@ function GameState.new()
                 {x = 128, y = 128},
                 {x = 64, y = 128}
             ),
+            SecurityCamera.new(72, 72, math.pi * 1.5, math.pi * 0.5),
         },
     })
 

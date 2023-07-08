@@ -11,7 +11,7 @@ end
 
 function Entity:update(dt, state)
     if self.behaviour ~= nil then
-        if self.behaviour:update(self, dt, state) then
+        if self.behaviour:update(dt) then
             self.behaviour = nil
         end
     end
@@ -19,6 +19,6 @@ end
 
 function Entity:draw(state)
     if self.behaviour ~= nil then
-        self.behaviour:draw(self, state)
+        self.behaviour:draw()
     end
 end

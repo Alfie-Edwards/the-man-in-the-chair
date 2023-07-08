@@ -1,11 +1,10 @@
 require "behaviours.behaviour"
 require "behaviours.a-star"
-require "entities.movable"
-
-
 Goto = {
     x = nil,
     y = nil,
+    i = nil,
+    path = nil,
 }
 setup_class(Goto, Behaviour)
 
@@ -18,52 +17,79 @@ function Goto.new(x, y)
     return obj
 end
 
-function Goto:update(entity, dt, state)
-    local path=self:pathfind(entity, state)
-    local d = {}
-    if not path then
-        return true
-    elseif #path==1 then
-        d = Vector.new(entity.x, entity.y, (path[1].x+0.5)*state.level.cell_length_pixels, (path[1].y+0.5)*state.level.cell_length_pixels)
-    else
-        d = Vector.new(entity.x, entity.y, (path[2].x+0.5)*state.level.cell_length_pixels, (path[2].y+0.5)*state.level.cell_length_pixels)
-    end
-    local sql = d:sq_length()
-    if sql <= (entity.speed * entity.speed) and #path==1 then
-        entity.x = self.x
-        entity.y = self.y
-        return true
-    else
-        local l = sql ^ (1 / 2)
-        entity.x = entity.x + d:dx() * entity.speed / l
-        entity.y = entity.y + d:dy() * entity.speed / l
-        return false
-    end
+function Goto:start(entity, state)
+    super().start(self, entity, state)
+    self.path = self:pathfind()
+    self.i = 1
 end
 
-function Goto:draw(entity, state)
-    local path=self:pathfind(entity,state)
-    if path then
-        for i , node in ipairs(path) do
-            if i~=1 then
-                love.graphics.line((node.x+0.5)*state.level.cell_length_pixels,(node.y+0.5)*state.level.cell_length_pixels,(path[i-1].x+0.5)*state.level.cell_length_pixels,(path[i-1].y+0.5)*state.level.cell_length_pixels)
+function Goto:update(dt)
+    if not self.path then
+        return true
+    end
+
+    local speed = self.entity.speed * dt
+    local px = (self.path[self.i].x + 0.5) * self.state.level.cell_length_pixels
+    local py = (self.path[self.i].y + 0.5) * self.state.level.cell_length_pixels
+    local d = Vector.new(self.entity.x, self.entity.y, px, py)
+    local sql = d:sq_length()
+
+    if sql > 0 then
+        if math.abs(d:dx()) > math.abs(d:dy()) then
+            if d:dx() < 0 then
+                self.entity.direction = Direction.LEFT
+            else
+                self.entity.direction = Direction.RIGHT
+            end
+        else
+            if d:dy() < 0 then
+                self.entity.direction = Direction.UP
+            else
+                self.entity.direction = Direction.DOWN
             end
         end
     end
-end
 
-function Goto:pathfind(entity,state)
-    local valid_node_func = function ( node, neighbor )
-        local nodeDist = state.level.cell_length_pixels
-        -- helper function in the a-star module, returns distance between points
-        if astar.distance ( node.x, node.y, neighbor.x, neighbor.y ) <= nodeDist then
+    if sql <= (speed * speed) then
+        self.entity.x = px
+        self.entity.y = py
+        if self.i == #self.path then
             return true
         end
-        return false
+        self.i = self.i + 1
+    else
+        local l = sql ^ (1 / 2)
+        self.entity.x = self.entity.x + (d:dx() * speed) / l
+        self.entity.y = self.entity.y + (d:dy() * speed) / l
     end
-    local ignore = true
-    local path = astar.path (Cell.new(state.level:cell(entity.x,entity.y)), Cell.new(state.level:cell(self.x,self.y)), entity:accessible_cells(state), ignore, valid_node_func )
-    if path then
-        return path
+
+    return false
+end
+
+function Goto:draw()
+    if self.path then
+        love.graphics.line(
+            self.entity.x,
+            self.entity.y,
+            (self.path[self.i].x + 0.5) * self.state.level.cell_length_pixels,
+            (self.path[self.i].y + 0.5) * self.state.level.cell_length_pixels
+        )
+        for i = self.i + 1, #self.path do
+            love.graphics.line(
+                (self.path[i].x + 0.5) * self.state.level.cell_length_pixels,
+                (self.path[i].y + 0.5) * self.state.level.cell_length_pixels,
+                (self.path[i - 1].x + 0.5) * self.state.level.cell_length_pixels,
+                (self.path[i - 1].y + 0.5) * self.state.level.cell_length_pixels
+            )
+        end
     end
+end
+
+function Goto:pathfind()
+    return astar.path(
+        Cell.new(self.state.level:cell(self.entity.x, self.entity.y)),
+        Cell.new(self.state.level:cell(self.x, self.y)),
+        self.entity:accessible_cells(self.state),
+        true
+    )
 end

@@ -13,19 +13,20 @@ function Turn.new(angle)
     return obj
 end
 
-function Turn:update(entity, dt, state)
+function Turn:update(dt)
+    local d = self.angle - self.entity.angle
+    d = d + (2 * math.pi)
+    d = d % (2 * math.pi)
+    if d > math.pi then
+        d = d - (math.pi * 2)
+    end
 
-    local d = self.angle - entity.angle
-    (() + (math.pi * 2)) % (math.py * 2)
-    local speed = entity. * dt
-    if d < speed then
-        entity.angle = self.angle
+    local speed = self.entity.sweep_speed * dt
+    if math.abs(d) < speed then
+        self.entity.angle = self.angle
         return true
     else
-        entity.angle = entity.angle + d
+        self.entity.angle = self.entity.angle + (d * speed) / math.abs(d)
         return false
     end
-end
-
-function Turn:draw(entity, state)
 end

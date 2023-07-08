@@ -1,14 +1,16 @@
 require "entities.movable"
 require "behaviours.goto"
+require "direction"
 
 George = {
-    SPEED = 1,
+    SPEED = 20,
     SPAWN_X = 68,
     SPAWN_Y = 250,
 
     x = nil,
     y = nil,
     speed = nil,
+    direction = nil,
 }
 setup_class(George, Movable)
 
@@ -19,6 +21,7 @@ function George.new()
     obj.y = George.SPAWN_Y
     obj.speed = George.SPEED
     obj.behaviour = Goto.new(200, 300)
+    obj.direction = Direction.DOWN
 
     return obj
 end

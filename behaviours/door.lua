@@ -10,11 +10,9 @@ function DoorBehaviour.new()
     return obj
 end
 
-function DoorBehaviour:update(entity, dt, state)
-    for _,c in ipairs(entity:active_cells()) do
-        state.level:set_door_cell_solid(c.x, c.y, entity:is_solid())
-    end
-end
+function DoorBehaviour:update(dt)
 
-function DoorBehaviour:draw(entity, state)
+    for _,c in ipairs(self.entity:active_cells()) do
+        self.state.level:set_door_cell_solid(c.x, c.y, self.entity:is_solid())
+    end
 end
