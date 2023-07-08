@@ -2,28 +2,75 @@ require "utils.vector"
 
 
 Level = {
-    img = nil,
     geom = nil,
     cell_length_pixels = 16,
     cells = nil,
     solid_cells = nil,
 
-    tile_resources = {
-        floor = {
-            colour_code = {1, 1, 1},
-            image = assets:get_image("floor"),
-        },
-        wall = {
-            colour_code = {0, 0, 0},
-            image = assets:get_image("wall"),
-        },
-    },
-    solid_tile_types = { "wall" },
+    tile_resources = nil,
+    solid_tile_types = nil,
 
     camera = { x = 0, y = 0 },
     camera_pan_speed = 450,
 }
 setup_class(Level)
+
+function Level.from_file(filename)
+
+    local f = io.open(filename, "r")
+
+    if not f then
+        print("couldn't fine file "..filename.."!")
+        assert(false)
+    end
+
+    local geom_img_file = nil
+    local tile_resources = {}
+    local solid_tile_types = {}
+
+    local stages = { GEOM_IMG = 1, TILE_MAPPING = 2, SOLID_TILES = 3 }
+    local stage = stages.GEOM_IMG
+
+    for line in f:lines() do
+        if line == "" then
+            stage = stage + 1
+        elseif stage == stages.GEOM_IMG then
+            geom_img_file = line
+        elseif stage == stages.TILE_MAPPING then
+            local name, col_hex = string.match(line, "(.*): (.*)")
+
+            tile_resources[name] = {
+                colour_code = hex2rgb(col_hex),
+                image = assets:get_image(name),
+            }
+        elseif stage == stages.SOLID_TILES then
+            local found = false
+            for tile_type,_ in pairs(tile_resources) do
+                if tile_type == line then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                print("tried to make unknown tile type "..line.." a solid tile type")
+                f:close()
+                assert(false)
+            end
+
+            table.insert(solid_tile_types, line)
+        else
+            print("too many empty lines in file!")
+            f:close()
+            assert(false)
+        end
+    end
+
+    f:close()
+
+    assert(geom_img_file ~= nil)
+
+    return Level.new(geom_img_file, tile_resources, solid_tile_types)
+end
 
 function Level:type_from_colour(r, g, b)
     local colour = {r, g, b}
@@ -40,22 +87,44 @@ function Level:is_solid(tile_type)
     return value_in(tile_type, self.solid_tile_types)
 end
 
-function Level.new()
+function Level.new(geom_img_file, tile_resources, solid_tile_types)
+
+    -- debug defaults
+    if geom_img_file == nil then
+        geom_img_file = "big-level-geom"
+    end
+    if tile_resources == nil then
+        tile_resources = {
+            floor = {
+                colour_code = {1, 1, 1},
+                image = assets:get_image("floor"),
+            },
+            wall = {
+                colour_code = {0, 0, 0},
+                image = assets:get_image("wall"),
+            },
+        }
+    end
+    if solid_tile_types == nil then
+        solid_tile_types = { "wall" }
+    end
 
     local obj = magic_new()
 
-    obj.img = assets:get_image("map3")
-    obj.geom = assets:get_image_data("big-level-geom", "bmp")
+    obj.geom = assets:get_image_data(geom_img_file, "png")
 
     obj.cells = HashSet.new()
     obj.solid_cells = HashSet.new()
+
+    obj.tile_resources = tile_resources
+    obj.solid_tile_types = solid_tile_types
 
     for y=0,obj.geom:getHeight() - 1 do
         for x=0,obj.geom:getWidth() - 1 do
             obj.cells:add(Cell.new(x, y))
 
-            -- if obj.geom:getPixel(x, y) == 0 then
-            local tile_type = obj:type_from_colour(obj.geom:getPixel(x, y))
+            local r, g, b = obj:colour_at_pixel(x, y)
+            local tile_type = obj:type_from_colour(obj:colour_at_pixel(x, y))
             assert(tile_type ~= nil)
             if obj:is_solid(tile_type) then
                 obj.solid_cells:add(Cell.new(x, y))
@@ -92,18 +161,25 @@ function Level:draw_geom(opacity)
         opacity = 1
     end
 
-    local scale_x = (self.cell_length_pixels * canvas:width()) / self.img:getWidth()
-    local scale_y = (self.cell_length_pixels * canvas:height()) / self.img:getHeight()
-
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(self.geom_img, 0, 0, 0, scale_x, scale_y)
+    love.graphics.draw(self.geom_img, 0, 0, 0,
+                       self.cell_length_pixels, self.cell_length_pixels)
+end
+
+function Level:colour_at_pixel(x, y)
+    local r, g, b = self.geom:getPixel(x, y)
+
+    return math.floor(r * 255),
+           math.floor(g * 255),
+           math.floor(b * 255)
 end
 
 function Level:draw_tiles()
     love.graphics.setColor(1, 1, 1, 1)
     for x=0,self:width() - 1 do
         for y=0,self:height() - 1 do
-            local tile_type = self:type_from_colour(self.geom:getPixel(x, y))
+            local tile_type = self:type_from_colour(self:colour_at_pixel(x, y))
+            assert(tile_type ~= nil)
 
             love.graphics.draw(self.tile_resources[tile_type].image,
                                x * self.cell_length_pixels,
@@ -111,13 +187,6 @@ function Level:draw_tiles()
                                0, 1, 1)
         end
     end
-end
-
-function Level:draw_img()
-    local scale_x = canvas:width() / self.img:getWidth()
-    local scale_y = canvas:height() / self.img:getHeight()
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(self.img, 0, 0, 0, scale_x, scale_y)
 end
 
 function Level:cell_x(x)

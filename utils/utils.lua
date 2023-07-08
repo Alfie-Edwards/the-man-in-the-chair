@@ -229,6 +229,14 @@ function get_local(name, default, stack_level)
     end
 end
 
+function hex2rgb(hex)
+    hex = hex:gsub("#","")
+    return {tonumber("0x"..hex:sub(1,2)),
+            tonumber("0x"..hex:sub(3,4)),
+            tonumber("0x"..hex:sub(5,6))}
+end
+
+
 -- Import other utils files.
 require "utils.classes"
 require "utils.set"

@@ -6,7 +6,7 @@ setup_class(GameState, State)
 
 function GameState.new()
     local obj = magic_new({
-        level = Level.new(),
+        level = Level.from_file("assets/level_data"),
         camera = Camera.new(),
     })
 
