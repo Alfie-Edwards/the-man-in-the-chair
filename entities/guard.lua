@@ -1,4 +1,4 @@
-require "entities.entity"
+require "entities.movable"
 require "behaviours.patrol"
 
 Guard = {
@@ -8,7 +8,7 @@ Guard = {
     y = nil,
     speed = nil,
 }
-setup_class(Guard, Entity)
+setup_class(Guard, Movable)
 
 function Guard.new(...)
     local obj = magic_new()
@@ -23,9 +23,13 @@ function Guard.new(...)
     return obj
 end
 
+function Guard:accessible_cells(state)
+    return state.level.cells - state.level.solid_cells
+end
+
 function Guard:draw(state)
     super().draw(self, state)
-    
+
     love.graphics.setColor({0, 0.5, 0.2, 1})
     love.graphics.rectangle("fill", self.x - 8, self.y - 8, 16, 16)
 end

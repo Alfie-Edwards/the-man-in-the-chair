@@ -6,6 +6,7 @@ Level = {
     cell_length_pixels = 16,
     cells = nil,
     solid_cells = nil,
+    solid_door_cells = nil,
 
     tile_resources = nil,
     solid_tile_types = nil,
@@ -108,6 +109,7 @@ function Level.new(geom_img_file, tile_resources, solid_tile_types)
 
     obj.cells = HashSet.new()
     obj.solid_cells = HashSet.new()
+    obj.solid_door_cells = HashSet.new()
 
     obj.tile_resources = tile_resources
     obj.solid_tile_types = solid_tile_types
@@ -222,11 +224,11 @@ function Level:cell_out_of_bounds(x, y)
            y < 0 or y >= self:height()
 end
 
-function Level:set_cell_solid(x, y, is_solid)
+function Level:set_door_cell_solid(x, y, is_solid)
     if is_solid then
-        self.solid_cells:add(Cell.new(x, y))
+        self.solid_door_cells:add(Cell.new(x, y))
     else
-        self.solid_cells:remove(Cell.new(x, y))
+        self.solid_door_cells:remove(Cell.new(x, y))
     end
 end
 

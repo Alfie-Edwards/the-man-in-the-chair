@@ -1,5 +1,8 @@
 require "behaviours.behaviour"
 require "behaviours.a-star"
+require "entities.movable"
+
+
 Goto = {
     x = nil,
     y = nil,
@@ -24,7 +27,7 @@ function Goto:update(entity, dt, state)
         d = Vector.new(entity.x, entity.y, (path[1].x+0.5)*state.level.cell_length_pixels, (path[1].y+0.5)*state.level.cell_length_pixels)
     else
         d = Vector.new(entity.x, entity.y, (path[2].x+0.5)*state.level.cell_length_pixels, (path[2].y+0.5)*state.level.cell_length_pixels)
-    end  
+    end
     local sql = d:sq_length()
     if sql <= (entity.speed * entity.speed) and #path==1 then
         entity.x = self.x
@@ -50,7 +53,7 @@ function Goto:draw(entity, state)
 end
 
 function Goto:pathfind(entity,state)
-    local valid_node_func = function ( node, neighbor ) 
+    local valid_node_func = function ( node, neighbor )
         local nodeDist = state.level.cell_length_pixels
         -- helper function in the a-star module, returns distance between points
         if astar.distance ( node.x, node.y, neighbor.x, neighbor.y ) <= nodeDist then
@@ -59,7 +62,7 @@ function Goto:pathfind(entity,state)
         return false
     end
     local ignore = true
-    local path = astar.path (Cell.new(state.level:cell(entity.x,entity.y)), Cell.new(state.level:cell(self.x,self.y)), state.level.cells-state.level.solid_cells, ignore, valid_node_func )
+    local path = astar.path (Cell.new(state.level:cell(entity.x,entity.y)), Cell.new(state.level:cell(self.x,self.y)), entity:accessible_cells(state), ignore, valid_node_func )
     if path then
         return path
     end

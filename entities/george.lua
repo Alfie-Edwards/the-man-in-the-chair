@@ -1,4 +1,4 @@
-require "entities.entity"
+require "entities.movable"
 require "behaviours.goto"
 
 George = {
@@ -10,7 +10,7 @@ George = {
     y = nil,
     speed = nil,
 }
-setup_class(George, Entity)
+setup_class(George, Movable)
 
 function George.new()
     local obj = magic_new()
