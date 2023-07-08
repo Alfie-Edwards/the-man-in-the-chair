@@ -1,10 +1,15 @@
 require "ui.simple_element"
+require "game_state"
 
-Game = {}
+Game = {
+    state = nil,
+}
 setup_class(Game, SimpleElement)
 
 function Game.new(mode)
     local obj = magic_new()
+
+    obj.state = GameState.new()
 
     obj:set_properties(
         {
@@ -58,4 +63,5 @@ end
 
 function Game:draw()
     super().draw(self)
+    self.state.level:draw_img()
 end
