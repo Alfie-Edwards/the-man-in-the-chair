@@ -185,16 +185,6 @@ function Level:draw_tiles()
     end
 end
 
-function Level:cell_x(x)
-    local scale_x = self.geom:getWidth() / canvas:width()
-    return math.floor(x * scale_x)
-end
-
-function Level:cell_y(y)
-    local scale_y = self.geom:getHeight() / canvas:height()
-    return math.floor(y * scale_y)
-end
-
 function Level:width()
     return self.geom:getWidth()
 end
@@ -204,7 +194,11 @@ function Level:height()
 end
 
 function Level:cell(x, y)
-    return self:cell_x(x), self:cell_y(y)
+    if y == nil then
+        return math.floor(x / self.cell_length_pixels)
+    end
+    return math.floor(x / self.cell_length_pixels),
+           math.floor(y / self.cell_length_pixels)
 end
 
 function Level:position_in_cell(x, y)
@@ -212,10 +206,7 @@ function Level:position_in_cell(x, y)
 end
 
 function Level:out_of_bounds(x, y)
-    return cell_out_of_bounds(
-        math.floor(x / cell_length_pixels),
-        math.floor(y / cell_length_pixels)
-    )
+    return cell_out_of_bounds(self:cell(x, y))
 end
 
 function Level:cell_out_of_bounds(x, y)

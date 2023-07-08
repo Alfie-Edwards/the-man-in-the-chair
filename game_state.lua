@@ -10,7 +10,7 @@ function GameState.new()
         level = Level.from_file("assets/level_data"),
         camera = Camera.new(),
         entities = {
-        	George.new(),
+            George.new(),
         },
     })
 
