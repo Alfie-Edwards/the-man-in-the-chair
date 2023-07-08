@@ -40,7 +40,7 @@ Door = {
             "DoorLeft6",
         },
     }),
-    ANIM_DURATION_SECONDS = 5,
+    ANIM_DURATION_SECONDS = 1,
 
     x = nil,
     y = nil,
