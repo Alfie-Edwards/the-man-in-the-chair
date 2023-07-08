@@ -20,7 +20,7 @@ function Level.from_file(filename)
     local f = io.open(filename, "r")
 
     if not f then
-        error("couldn't fine file "..filename.."!")
+        error("couldn't open file "..filename.."!")
     end
 
     local geom_img_file = nil
