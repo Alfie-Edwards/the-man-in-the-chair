@@ -120,7 +120,6 @@ function Level.new(geom_img_file, tile_resources, solid_tile_types)
         for x=0,obj.geom:getWidth() - 1 do
             obj.cells:add(Cell.new(x, y))
 
-            local r, g, b = obj:colour_at_pixel(x, y)
             local tile_type = obj:type_from_colour(obj:colour_at_pixel(x, y))
             assert(tile_type ~= nil)
             if obj:is_solid(tile_type) then
