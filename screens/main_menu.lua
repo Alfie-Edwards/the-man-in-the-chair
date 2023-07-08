@@ -1,6 +1,7 @@
 require "ui.simple_element"
 require "ui.image"
 require "ui.image_button"
+require "ui.triple_button"
 require "ui.table"
 require "screens.game"
 
@@ -21,7 +22,7 @@ function MainMenu.new()
     local bg = Image.new()
     bg:set_properties(
         {
-            image = assets:get_image("ui/menu_background"),
+            image = assets:get_image("ui/TitleBackground"),
             width = canvas:width(),
             height = canvas:height(),
         }
@@ -31,23 +32,29 @@ function MainMenu.new()
     local grid = Table.new()
     grid:set_properties(
         {
-            cols = 1,
-            rows = 2,
+            cols = 3,
+            rows = 1,
             width = canvas:width(),
             height = canvas:height(),
         }
     )
     obj:add_child(grid)
 
-    local button_play = ImageButton.new()
+    local button_play = TripleButton.new()
+    local button_play_img = assets:get_image("ui/ButtonPlayRelease")
+    local button_play_aspect = button_play_img:getHeight() / button_play_img:getWidth()
+    local button_play_width = 200
     button_play:set_properties(
         {
-            image = assets:get_image("ui/button_play"),
-            image_data = assets:get_image_data("ui/button_play"),
+            default_image = button_play_img,
+            hover_image = assets:get_image("ui/ButtonPlayHover"),
+            click_image = assets:get_image("ui/ButtonPlayPress"),
             x_align = "center",
-            y_align = "center",
+            y_align = "top",
             x = grid:cell(1, 1).width / 2,
             y = grid:cell(1, 1).height / 2,
+            width = button_play_width,
+            height = button_play_width * button_play_aspect,
             click = function()
                 view:set_content(Game.new())
             end,
@@ -55,21 +62,27 @@ function MainMenu.new()
     )
     grid:cell(1, 1):add_child(button_play)
 
-    local button_quit = ImageButton.new()
+    local button_quit = TripleButton.new()
+    local button_quit_img = assets:get_image("ui/ButtonQuitRelease")
+    local button_quit_aspect = button_play_img:getHeight() / button_play_img:getWidth()
+    local button_quit_width = 200
     button_quit:set_properties(
         {
-            image = assets:get_image("ui/button_quit"),
-            image_data = assets:get_image_data("ui/button_quit"),
+            default_image = button_quit_img,
+            hover_image = assets:get_image("ui/ButtonQuitHover"),
+            click_image = assets:get_image("ui/ButtonQuitPress"),
             x_align = "center",
-            y_align = "center",
-            x = grid:cell(1, 2).width / 2,
-            y = grid:cell(1, 2).height / 2,
+            y_align = "top",
+            x = grid:cell(3, 1).width / 2,
+            y = grid:cell(3, 1).height / 2,
+            width = button_quit_width,
+            height = button_quit_width * button_quit_aspect,
             click = function()
                 love.event.quit()
             end,
         }
     )
-    grid:cell(1, 2):add_child(button_quit)
+    grid:cell(3, 1):add_child(button_quit)
 
     return obj
 end

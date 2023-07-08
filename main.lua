@@ -4,6 +4,7 @@ assets = AssetCache.new()
 require "pixelcanvas"
 require "ui.view"
 require "screens.game"
+require "screens.main_menu"
 
 function love.load()
 
@@ -24,7 +25,7 @@ function love.mousemoved(x, y, dx, dy, istouch)
     view:mousemoved(pos.x, pos.y, dx, dy)
 end
 
-function love.mousepressed(x, y, button)
+function love.mousereleased(x, y, button)
     local pos = canvas:screen_to_canvas(x, y)
     view:click(pos.x, pos.y, button)
 end
