@@ -26,15 +26,19 @@ function is_basic_type(inst)
 end
 
 function is_type(inst, ...)
-    for _, type_name in ipairs({...}) do
-        assert(type(type_name) == "string") 
+    for _, t in ipairs({...}) do
+        if not is_basic_type(t) then
+            -- Handle passing in a raw type.
+            t = type_string(t)
+        end
+        assert(type(t) == "string") 
         if is_basic_type(inst) then
-            if type(inst) == type_name then
+            if type(inst) == t then
                 return true
             end
         else
             -- Class instances and LOVE objects have their own type function which accounts for inheritance.
-            if inst:typeOf(type_name) then
+            if inst:typeOf(t) then
                 return true
             end
         end
