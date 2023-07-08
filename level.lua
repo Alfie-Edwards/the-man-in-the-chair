@@ -17,7 +17,7 @@ setup_class(Level)
 
 function Level.from_file(filename)
 
-    local f = io.open(filename, "r")
+    local f = love.filesystem.lines(filename)
 
     if not f then
         error("couldn't open file "..filename.."!")
@@ -30,7 +30,7 @@ function Level.from_file(filename)
     local stages = { GEOM_IMG = 1, TILE_MAPPING = 2, SOLID_TILES = 3 }
     local stage = stages.GEOM_IMG
 
-    for line in f:lines() do
+    for line in f do
         if line == "" then
             stage = stage + 1
         elseif stage == stages.GEOM_IMG then
@@ -51,18 +51,14 @@ function Level.from_file(filename)
                 end
             end
             if not found then
-                f:close()
                 error("tried to make unknown tile type "..line.." a solid tile type")
             end
 
             table.insert(solid_tile_types, line)
         else
-            f:close()
             error("too many empty lines in file!")
         end
     end
-
-    f:close()
 
     assert(geom_img_file ~= nil)
 
@@ -264,7 +260,7 @@ function Cell.new(x, y)
 end
 
 function Cell:__eq(other)
-    if not is_type(rhs, Cell) then
+    if not is_type(other, Cell) then
         return false
     end
     return self:__hash() == other:__hash()

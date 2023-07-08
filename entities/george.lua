@@ -4,7 +4,7 @@ require "behaviours.goto"
 George = {
     SPEED = 1,
     SPAWN_X = 68,
-    SPAWN_Y = 68,
+    SPAWN_Y = 250,
 
     x = nil,
     y = nil,
@@ -18,7 +18,7 @@ function George.new()
     obj.x = George.SPAWN_X
     obj.y = George.SPAWN_Y
     obj.speed = George.SPEED
-    obj.behaviour = Goto.new(1000, 200)
+    obj.behaviour = Goto.new(200, 300)
 
     return obj
 end
