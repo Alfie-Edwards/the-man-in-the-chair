@@ -50,3 +50,16 @@ function Vector:direction()
     local length = self:length()
     return { x = self:dx() / length, y = self:dy() / length }
 end
+
+function Vector:scale_to_length(length)
+    local current_length = self:length()
+
+    assert(current_length ~= 0)
+
+    local scale = length / current_length
+
+    self.x1 = self.x1 * scale
+    self.x2 = self.x2 * scale
+    self.y1 = self.y1 * scale
+    self.y2 = self.y2 * scale
+end

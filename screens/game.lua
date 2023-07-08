@@ -1,3 +1,4 @@
+require "ui.image_button"
 require "ui.simple_element"
 require "game_state"
 
@@ -59,9 +60,10 @@ end
 
 function Game:update(dt)
     super().update(self, dt)
+    self.state.level:update(dt)
 end
 
 function Game:draw()
     super().draw(self)
-    self.state.level:draw_img()
+    self.state.level:draw()
 end
