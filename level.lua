@@ -48,32 +48,6 @@ function Level:height_pixels()
     return self:height() * self.cell_length_pixels
 end
 
-function Level:update(dt)
-    local movement = Vector.new(0, 0, 0, 0)
-
-    if love.keyboard.isDown("up", "w") then
-        movement.y2 = -1
-    end
-    if love.keyboard.isDown("down", "s") then
-        movement.y2 = 1
-    end
-    if love.keyboard.isDown("left", "a") then
-        movement.x2 = -1
-    end
-    if love.keyboard.isDown("right", "d") then
-        movement.x2 = 1
-    end
-
-    if movement:length() == 0 then
-        return
-    end
-
-    movement:scale_to_length(self.camera_pan_speed * dt)
-
-    self.camera.x = clamp(self.camera.x + movement.x2, 0, self:width_pixels() - canvas:width())
-    self.camera.y = clamp(self.camera.y + movement.y2, 0, self:height_pixels() - canvas:height())
-end
-
 function Level:draw()
     love.graphics.push()
     love.graphics.translate(-self.camera.x, -self.camera.y)
@@ -124,18 +98,20 @@ function Level:cell(x, y)
     return self:cell_x(x), self:cell_y(y)
 end
 
-function Level:cell_size()
-    return canvas:width() / self.geom:getWidth()
-end
-
 function Level:position_in_cell(x, y)
-    local cs = self:cell_size()
-    return x % cs, y % cs
+    return x % cell_length_pixels, y % cell_length_pixels
 end
 
 function Level:out_of_bounds(x, y)
-    return x < 0 or x > canvas:width() or
-           y < 0 or y > canvas:height()
+    return cell_out_of_bounds(
+        math.floor(x / cell_length_pixels),
+        math.floor(y / cell_length_pixels)
+    )
+end
+
+function Level:cell_out_of_bounds(x, y)
+    return x < 0 or x >= self:width() or
+           y < 0 or y >= self:height()
 end
 
 function Level:cell_solid(x, y)
@@ -176,4 +152,37 @@ end
 
 function Cell:__hash()
     return tostring(self.x)..","..tostring(self.y)
+end
+
+function raycast(level, x, y, angle, fov, max_distance)
+    local result = HashSet.new()
+
+    -- Adjust from world-space into level-space
+    x = x / level.cell_length_pixels
+    y = y / level.cell_length_pixels
+    max_distance = max_distance / level.cell_length_pixels
+
+    local angle_start = angle - fov / 2
+    local angle_end = angle - fov / 2
+    local arc_length = max_distance * fov
+    local rays = math.max(2, math.ceil(arc_length))
+    local d_angle = 0
+    local inc = max_distance / math.ceil(max_distance)
+    for i=1,rays do
+        local ray_x = x
+        local ray_y = y
+        local ray_angle = angle_start + ((i - 1) * fov) / (rays - 1)
+        local dx = math.cos(ray_angle)
+        local dy = math.sin(ray_angle)
+        for distance = 0, max_distance, inc do
+            local cell_x = math.floor(x + dx * distance)
+            local cell_y = math.floor(y + dy * distance)
+            if level:cell_out_of_bounds(cell_x, cell_y) or level:cell_solid(cell_x, cell_y) then
+                break
+            end
+            result:add(Cell.new(cell_x, cell_y))
+        end
+    end
+
+    return result
 end

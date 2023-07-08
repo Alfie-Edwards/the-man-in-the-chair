@@ -11,36 +11,56 @@ function HashSet.new()
     return obj
 end
 
-function HashSet:contains(key)
-    return self[key]
+function HashSet:contains(item)
+    return self[item]
 end
 
-function HashSet:add(key)
-    self[key] = true
+function HashSet:add(item)
+    self[item] = true
 end
 
-function HashSet:remove(key)
-    self[key] = false
+function HashSet:remove(item)
+    self[item] = false
 end
 
-function HashSet:__index(key)
-    if key.__hash ~= nil then
-        return self[key:__hash()]
+function HashSet:__index(item)
+    if item.__hash ~= nil then
+        return self[item:__hash()] ~= false
     end
     return false
 end
 
-function HashSet:__newindex(key, value)
+function HashSet:__newindex(item, value)
+    assert(item.__hash ~= nil)
     assert(type(value) == "boolean")
-    assert(key.__hash ~= nil)
 
     -- Temporarily unset metatable to allow direct access.
     local mt = getmetatable(self)
     setmetatable(self, {})
     if value then
-        self[key:__hash()] = true
+        self[item:__hash()] = item
     else
-        self[key:__hash()] = nil
+        self[item:__hash()] = nil
     end
     setmetatable(self, mt)
+end
+
+function HashSet:__add(other)
+    local result = HashSet.new()
+    for _, item in pairs(self) do
+        result:add(item)
+    end
+    for _, other in pairs(self) do
+        result:add(item)
+    end
+end
+
+function HashSet:__sub(other)
+    local result = HashSet.new()
+    for _, item in pairs(self) do
+        result:add(item)
+    end
+    for _, other in pairs(self) do
+        result:remove(item)
+    end
 end
