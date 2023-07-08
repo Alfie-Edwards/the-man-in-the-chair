@@ -7,6 +7,8 @@ function HashSet.new()
     local obj = {}
 
     setup_instance(obj, HashSet)
+
+    return obj
 end
 
 function HashSet:contains(key)
@@ -14,11 +16,11 @@ function HashSet:contains(key)
 end
 
 function HashSet:add(key)
-    return self[key] = true
+    self[key] = true
 end
 
 function HashSet:remove(key)
-    return self[key] = nil
+    self[key] = false
 end
 
 function HashSet:__index(key)
@@ -29,7 +31,7 @@ function HashSet:__index(key)
 end
 
 function HashSet:__newindex(key, value)
-    assert(type(value) == "bool")
+    assert(type(value) == "boolean")
     assert(key.__hash ~= nil)
 
     -- Temporarily unset metatable to allow direct access.

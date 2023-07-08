@@ -15,8 +15,8 @@ function Level.new()
     obj.cells = HashSet.new()
     obj.solid_cells = HashSet.new()
 
-    for y=1,obj.geom:getHeight() do
-        for x=1,obj.geom:getWidth() do
+    for y=0,obj.geom:getHeight() - 1 do
+        for x=0,obj.geom:getWidth() - 1 do
             obj.cells:add(Cell.new(x, y))
 
             if obj.geom:getPixel(x, y) == 0 then
@@ -76,7 +76,7 @@ function Level:out_of_bounds(x, y)
 end
 
 function Level:cell_solid(x, y)
-    return self.solid_cells[Cell.new(x, y))]
+    return self.solid_cells[Cell.new(x, y)]
 end
 
 function Level:solid(pos)
