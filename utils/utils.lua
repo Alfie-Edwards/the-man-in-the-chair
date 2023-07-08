@@ -24,6 +24,19 @@ function reverse(x)
     return rev
 end
 
+function lists_equal(l1, l2)
+    if #l1 ~= #l2 then
+        return false
+    end
+
+    for i=1,#l1 do
+        if l1[i] ~= l2[i] then
+            return false
+        end
+    end
+    return true
+end
+
 function shallowcopy(tab)
     res = {}
     for k, v in pairs(tab) do

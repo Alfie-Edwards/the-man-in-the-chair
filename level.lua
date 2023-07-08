@@ -8,10 +8,37 @@ Level = {
     cells = nil,
     solid_cells = nil,
 
+    tile_resources = {
+        floor = {
+            colour_code = {1, 1, 1},
+            image = assets:get_image("floor"),
+        },
+        wall = {
+            colour_code = {0, 0, 0},
+            image = assets:get_image("wall"),
+        },
+    },
+    solid_tile_types = { "wall" },
+
     camera = { x = 0, y = 0 },
     camera_pan_speed = 450,
 }
 setup_class(Level)
+
+function Level:type_from_colour(r, g, b)
+    local colour = {r, g, b}
+    for tile_type, tile in pairs(self.tile_resources) do
+        if lists_equal(tile.colour_code, colour) then
+            return tile_type
+        end
+    end
+
+    return nil
+end
+
+function Level:is_solid(tile_type)
+    return value_in(tile_type, self.solid_tile_types)
+end
 
 function Level.new()
 
@@ -27,7 +54,10 @@ function Level.new()
         for x=0,obj.geom:getWidth() - 1 do
             obj.cells:add(Cell.new(x, y))
 
-            if obj.geom:getPixel(x, y) == 0 then
+            -- if obj.geom:getPixel(x, y) == 0 then
+            local tile_type = obj:type_from_colour(obj.geom:getPixel(x, y))
+            assert(tile_type ~= nil)
+            if obj:is_solid(tile_type) then
                 obj.solid_cells:add(Cell.new(x, y))
             end
         end
@@ -52,7 +82,7 @@ function Level:draw()
     love.graphics.push()
     love.graphics.translate(-self.camera.x, -self.camera.y)
 
-    self:draw_geom()
+    self:draw_tiles()
 
     love.graphics.pop()
 end
@@ -67,6 +97,20 @@ function Level:draw_geom(opacity)
 
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(self.geom_img, 0, 0, 0, scale_x, scale_y)
+end
+
+function Level:draw_tiles()
+    love.graphics.setColor(1, 1, 1, 1)
+    for x=0,self:width() - 1 do
+        for y=0,self:height() - 1 do
+            local tile_type = self:type_from_colour(self.geom:getPixel(x, y))
+
+            love.graphics.draw(self.tile_resources[tile_type].image,
+                               x * self.cell_length_pixels,
+                               y * self.cell_length_pixels,
+                               0, 1, 1)
+        end
+    end
 end
 
 function Level:draw_img()
@@ -99,7 +143,7 @@ function Level:cell(x, y)
 end
 
 function Level:position_in_cell(x, y)
-    return x % cell_length_pixels, y % cell_length_pixels
+    return x % self.cell_length_pixels, y % self.cell_length_pixels
 end
 
 function Level:out_of_bounds(x, y)
