@@ -88,6 +88,10 @@ function Door:active_cells()
 end
 
 function Door:toggle()
+    if self:is_transitioning() then
+        return self.state
+    end
+
     if self.state == DoorState.CLOSED then
         self.state = DoorState.OPEN
     elseif self.state == DoorState.OPEN then
@@ -95,6 +99,8 @@ function Door:toggle()
     end
 
     self.last_toggled = love.timer.getTime()
+
+    return self.state
 end
 
 function Door:sprite()
@@ -105,6 +111,13 @@ function Door:sprite()
     return sprite.sequence(seq,
                            Door.ANIM_DURATION_SECONDS,
                            love.timer.getTime() - self.last_toggled)
+end
+
+function Door:pixel_pos(state)
+    return {
+        x = self.x * state.level.cell_length_pixels,
+        y = self.y * state.level.cell_length_pixels
+    }
 end
 
 function Door:draw_cells(state)
@@ -122,10 +135,8 @@ function Door:draw(state)
     super().draw(self, state)
 
     local sprite = self:sprite()
+    local pos = self:pixel_pos(state)
 
     love.graphics.setColor({1, 1, 1, 1})
-    love.graphics.draw(sprite,
-                       self.x * state.level.cell_length_pixels,
-                       self.y * state.level.cell_length_pixels,
-                       0, 1, 1)
+    love.graphics.draw(sprite, pos.x, pos.y, 0, 1, 1)
 end

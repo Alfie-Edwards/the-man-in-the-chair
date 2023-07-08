@@ -11,10 +11,6 @@ function DoorBehaviour.new()
 end
 
 function DoorBehaviour:update(entity, dt, state)
-    if love.keyboard.isDown("space") and not entity:is_transitioning() then
-        entity:toggle()
-    end
-
     for _,c in ipairs(entity:active_cells()) do
         state.level:set_cell_solid(c.x, c.y, entity:is_solid())
     end
