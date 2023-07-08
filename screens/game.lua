@@ -61,6 +61,9 @@ end
 function Game:update(dt)
     super().update(self, dt)
     self.state.camera:update(dt, self.state)
+    for _, entity in ipairs(self.state.entities) do
+        entity:update(dt, self.state)
+    end
     angle = angle + dt
 end
 
@@ -73,6 +76,10 @@ function Game:draw()
     love.graphics.translate(-camera.x, -camera.y)
 
     self.state.level:draw()
+
+    for _, entity in ipairs(self.state.entities) do
+        entity:draw(self.state)
+    end
 
     local result = raycast(self.state.level, 120, 70, angle, math.pi * 0.5, 1000)
     for _, cell in pairs(result) do
