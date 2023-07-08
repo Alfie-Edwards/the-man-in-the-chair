@@ -60,7 +60,7 @@ function HashSet:__sub(other)
     for _, item in pairs(self) do
         result:add(item)
     end
-    for _, other in pairs(self) do
+    for _, item in pairs(other) do
         result:remove(item)
     end
 end

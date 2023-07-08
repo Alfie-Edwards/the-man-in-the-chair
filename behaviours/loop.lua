@@ -17,7 +17,7 @@ function Loop.new(...)
 end
 
 function Loop:update(entity, dt, state)
-    if self.sub_behaviours[i]:update(entity, dt, state) then
+    if self.sub_behaviours[self.i]:update(entity, dt, state) then
         self.i = self.i + 1
         if self.i > #self.sub_behaviours then
             self.i = 1
@@ -27,5 +27,5 @@ function Loop:update(entity, dt, state)
 end
 
 function Loop:draw(entity, state)
-    self.sub_behaviours[i]:draw(entity, state)
+    self.sub_behaviours[self.i]:draw(entity, state)
 end

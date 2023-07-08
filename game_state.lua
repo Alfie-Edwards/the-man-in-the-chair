@@ -2,6 +2,7 @@ require "level"
 require "camera"
 require "entities.door"
 require "entities.george"
+require "entities.guard"
 
 GameState = {}
 setup_class(GameState, State)
@@ -27,6 +28,12 @@ function GameState.new()
             Door.new( 57,  21, Direction.UP),
             Door.new( 64,  21, Direction.UP),
             Door.new( 19,  22, Direction.UP),
+            Guard.new(
+                {x = 64, y = 64},
+                {x = 128, y = 64},
+                {x = 128, y = 128},
+                {x = 64, y = 128}
+            ),
         },
     })
 
