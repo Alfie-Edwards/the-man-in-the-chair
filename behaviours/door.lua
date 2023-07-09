@@ -12,7 +12,7 @@ end
 
 function DoorBehaviour:update(dt)
     super().update(self, dt)
-    for _, c in ipairs(self.entity:active_cells()) do
+    for _, c in pairs(self.entity:active_cells()) do
         self.state.level:set_door_cell_solid(c, self.entity:is_solid())
     end
 end

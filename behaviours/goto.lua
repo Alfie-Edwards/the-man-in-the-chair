@@ -43,17 +43,26 @@ function Goto:update(dt)
                 self.i = self.i - 1
             end
 
-            for cull_i = self.i + 1, #self.path do
+            local path_end = #self.path
+            for cull_i = self.i + 1, path_end  do
                 -- Cull the end of the path.
                 self.path[cull_i] = nil
-                break
             end
+            self.x = (self.path[self.i].x + 0.5) * self.state.level.cell_length_pixels
+            self.y = (self.path[self.i].y + 0.5) * self.state.level.cell_length_pixels
+            break
         end
     end
 
     local speed = self.entity.speed * dt
     local px = (self.path[self.i].x + 0.5) * self.state.level.cell_length_pixels
     local py = (self.path[self.i].y + 0.5) * self.state.level.cell_length_pixels
+
+    if self.i == #self.path then
+        px = self.x
+        py = self.y
+    end
+
     local d = Vector.new(self.entity.x, self.entity.y, px, py)
     local sql = d:sq_length()
 
@@ -91,6 +100,7 @@ end
 
 function Goto:draw()
     super().draw(self)
+
     if self.path then
         love.graphics.line(
             self.entity.x,
@@ -106,6 +116,8 @@ function Goto:draw()
                 (self.path[i - 1].y + 0.5) * self.state.level.cell_length_pixels
             )
         end
+        love.graphics.setColor({0.2, 0, 0, 1})
+        love.graphics.rectangle("fill", self.x - 4, self.y - 4, 8, 8)
     end
 end
 
@@ -113,7 +125,7 @@ function Goto:pathfind()
     return astar.path(
         Cell.new(self.state.level:cell(self.entity.x, self.entity.y)),
         Cell.new(self.state.level:cell(self.x, self.y)),
-        self.entity:accessible_cells(self.state),
+        self.state.level.cells - self.state.level.solid_cells,
         false
     )
 end

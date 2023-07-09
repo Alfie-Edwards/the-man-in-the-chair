@@ -34,7 +34,9 @@ end
 function GeorgeBehaviour:update(dt)
     super().update(self, dt)
     if self.sub_behaviour then
-        self.sub_behaviour:update(dt)
+        if self.sub_behaviour:update(dt) then
+            self:find_door()
+        end
     end
     return false
 end

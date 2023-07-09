@@ -3,7 +3,7 @@ require "behaviours.george"
 require "direction"
 
 George = {
-    SPEED = 20,
+    SPEED = 100,
     SPAWN_X = 68,
     SPAWN_Y = 250,
 

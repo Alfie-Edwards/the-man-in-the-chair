@@ -55,12 +55,16 @@ Door = {
 }
 setup_class(Door, Entity)
 
-function Door.new(x, y, facing)
+function Door.new(x, y, facing, dead_end)
     local obj = magic_new()
 
     obj.x = x
     obj.y = y
     obj.facing = facing
+    obj.facing_rev = facing
+    if not obj.dead_end then
+        obj.facing_rev = direction_opposite(facing)
+    end
     obj.state = DoorState.CLOSED
     obj.lock_state = DoorLockState.UNLOCKED
     obj.last_toggled = t_since(Door.ANIM_DURATION_SECONDS)
@@ -77,27 +81,35 @@ function Door:is_solid()
     return self.state == DoorState.CLOSED or self:is_transitioning()
 end
 
-function Door:cell_before()
-    if self.facing == Direction.RIGHT then
-        return Cell.new(self.state.level:cell(self.x - 1, self.y))
+function Door:cell_before(state)
+    local facing = self.facing
+    if state.escaping then
+        facing = self.facing_rev
+    end
+    if facing == Direction.RIGHT then
+        return Cell.new(self.x - 1, self.y)
     elseif self.facing == Direction.UP then
-        return Cell.new(self.state.level:cell(self.x, self.y + 1))
+        return Cell.new(self.x, self.y + 1)
     elseif self.facing == Direction.LEFT then
-        return Cell.new(self.state.level:cell(self.x + 1, self.y))
+        return Cell.new(self.x + 1, self.y)
     else
-        return Cell.new(self.state.level:cell(self.x, self.y - 1))
+        return Cell.new(self.x, self.y - 1)
     end
 end
 
-function Door:cell_after()
+function Door:cell_after(state)
+    local facing = self.facing
+    if state.escaping then
+        facing = self.facing_rev
+    end
     if self.facing == Direction.RIGHT then
-        return Cell.new(self.state.level:cell(self.x + 1, self.y))
+        return Cell.new(self.x + 1, self.y)
     elseif self.facing == Direction.UP then
-        return Cell.new(self.state.level:cell(self.x, self.y - 1))
+        return Cell.new(self.x, self.y - 1)
     elseif self.facing == Direction.LEFT then
-        return Cell.new(self.state.level:cell(self.x - 1, self.y))
+        return Cell.new(self.x - 1, self.y)
     else
-        return Cell.new(self.state.level:cell(self.x, self.y + 1))
+        return Cell.new(self.x, self.y + 1)
     end
 end
 

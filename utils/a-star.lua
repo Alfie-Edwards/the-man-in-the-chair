@@ -38,7 +38,8 @@ local cachedPaths = nil
 
 function dist ( x1, y1, x2, y2 )
 	
-	return math.sqrt ( math.pow ( x2 - x1, 2 ) + math.pow ( y2 - y1, 2 ) )
+	-- return math.pow ( x2 - x1, 2 ) + math.pow ( y2 - y1, 2 )
+	return math.abs(x2 - x1) + math.abs(y2 - y1)
 end
 
 function dist_between ( nodeA, nodeB )
@@ -80,8 +81,9 @@ function neighbor_nodes ( theNode, nodes, goal )
 		if not (goal == neighbors[i] or nodes:contains(neighbors[i])) then
 			neighbors[i] = neighbors[#neighbors]
 			neighbors[#neighbors] = nil
+		else
+			i = i + 1
 		end
-		i = i + 1
 	end
 
 	return neighbors
@@ -121,16 +123,18 @@ end
 ----------------------------------------------------------------
 
 function a_star ( start, goal, nodes )
-
 	local closedset = {}
 	local openset = { start }
 	local came_from = {}
+
+	local MAX_IT = 100
+	local it = 1
 
 	local g_score, f_score = {}, {}
 	g_score [ start:__hash() ] = 0
 	f_score [ start:__hash() ] = g_score [ start:__hash() ] + heuristic_cost_estimate ( start, goal )
 
-	while #openset > 0 do
+	while #openset > 0 and it < MAX_IT do
 		local current = lowest_f_score ( openset, f_score )
 		if current == goal then
 			local path = unwind_path ( {}, came_from, goal )
@@ -157,6 +161,7 @@ function a_star ( start, goal, nodes )
 				end
 			end
 		end
+		it = it + 1
 	end
 	return nil -- no valid path
 end

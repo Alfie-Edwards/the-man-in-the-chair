@@ -244,6 +244,14 @@ function t_since(tstamp)
     return love.timer.getTime() - tstamp
 end
 
+function iter_size(x)
+    local n = 0
+    for _, _ in pairs(x) do
+        n = n + 1
+    end
+    return n
+end
+
 
 -- Import other utils files.
 require "utils.classes"

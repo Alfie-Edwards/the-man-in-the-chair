@@ -16,18 +16,15 @@ SecurityCamera = {
 }
 setup_class(SecurityCamera, Entity)
 
-function SecurityCamera.new(x, y, angle, sweep)
+function SecurityCamera.new(x, y, direction)
     local obj = magic_new()
 
     obj.sweep_speed = SecurityCamera.SWEEP_SPEED
     obj.x = x
     obj.y = y
-    obj.angle = angle - (sweep or 0) / 2
+    obj.angle = direction_to_angle(direction)
     obj.vision = HashSet.new()
-
-    if sweep > 0 then
-        obj.behaviour = Sweep.new(angle, sweep, SecurityCamera.WAIT_TIME)
-    end
+    obj.behaviour = Sweep.new(obj.angle, math.pi / 2, SecurityCamera.WAIT_TIME)
 
     return obj
 end
@@ -36,8 +33,8 @@ function SecurityCamera:update(dt, state)
     super().update(self, dt)
     self.vision = raycast(
         state.level,
-        self.x,
-        self.y,
+        self.x * state.level.cell_length_pixels,
+        self.y * state.level.cell_length_pixels,
         self.angle,
         SecurityCamera.FOV,
         SecurityCamera.VIEW_DISTANCE * state.level.cell_length_pixels)
@@ -52,5 +49,5 @@ function SecurityCamera:draw(state)
         love.graphics.rectangle("fill", cell.x * cell_size, cell.y * cell_size, cell_size, cell_size)
     end
     love.graphics.setColor({0.2, 0, 0, 1})
-    love.graphics.rectangle("fill", self.x - 4, self.y - 4, 8, 8)
+    love.graphics.rectangle("fill", self.x * cell_size - 4, self.y * cell_size - 4, 8, 8)
 end

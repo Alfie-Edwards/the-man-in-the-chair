@@ -34,7 +34,7 @@ function GotoTarget:next_door()
     for door, _ in pairs(self.unchecked_doors) do
         local path_through_door = astar.path(
             Cell.new(state.level:cell(entity.x, entity.y)),
-            self:get_door_cell_to_progress(door),
+            self:get_door_cell_to_progress(door, self.state),
             entity:accessible_cells(state) - self.door_cells,
             false
         )
@@ -55,8 +55,8 @@ function GotoTarget:update(dt)
             return true
         end
         self.goto_target = Goto.new(
-            self.target_door.x,
-            self.target_door.y,
+            self.target_door.x * self.state.level.cell_length_pixels,
+            self.target_door.y * self.state.level.cell_length_pixels,
             3 * self.state.level.cell_length_pixels
         )
         self.goto_target:start(self.entity, self.state)
@@ -72,11 +72,11 @@ function GotoTarget:update(dt)
     return false
 end
 
-function GotoTarget:get_door_cell_to_progress(door)
+function GotoTarget:get_door_cell_to_progress(door, state)
     if self.state.escaping then
-        return door:cell_before()
+        return door:cell_before(state)
     else
-        return door:cell_after()
+        return door:cell_after(state)
     end
 end
 
