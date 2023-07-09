@@ -54,10 +54,10 @@ function Sweep:can_see_george()
         if closest_guard == nil then
             return
         end
-        if is_type(closest_guard.behaviour.sub_behaviour, "Investigate") then
+        if type_string(closest_guard.behaviour.sub_behaviour) == "Investigate" then
             return
         end
-        closest_guard.behaviour:set_sub_behaviour(Investigate.new(self.entity.x + self.state.level.cell_length_pixels, self.entity.y + self.state.level.cell_length_pixels, 3, 3, 2))
+        closest_guard.behaviour:set_sub_behaviour(Investigate.new(george.x, george.y, 3, 3, 2))
     end
 end
 

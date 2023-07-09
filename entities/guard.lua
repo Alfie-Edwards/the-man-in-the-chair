@@ -4,7 +4,7 @@ require "direction"
 
 
 Guard = {
-    SPEED = 25,
+    SPEED = 80,
 
     SPRITE_SETS = {
         idle = sprite.make_set("Sprites/", {

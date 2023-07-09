@@ -44,7 +44,7 @@ function FindDoor:start(entity, state)
         self.goto_target = Goto.new(
             (cell.x + 0.5) * self.state.level.cell_length_pixels,
             (cell.y + 0.5) * self.state.level.cell_length_pixels,
-            3
+            1
         )
         self.goto_target:start(self.entity, self.state)
     end
@@ -96,7 +96,7 @@ function FindDoor:update(dt)
             self.goto_target = Goto.new(
                 (cell.x) * self.state.level.cell_length_pixels,
                 (cell.y) * self.state.level.cell_length_pixels,
-                2
+                1
             )
             self.goto_target:start(self.entity, self.state)
         end
