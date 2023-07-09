@@ -41,7 +41,9 @@ Door = {
             "DoorLeft6",
         },
     }),
-    ANIM_DURATION_SECONDS = 1,
+    ANIM_DURATION_SECONDS = 0.25,
+
+    OPEN_SOUND = assets:get_sound("Sound/SFXDoor", "wav"),
 
     x = nil,
     y = nil,
@@ -118,6 +120,7 @@ function Door:open()
     if self.state == DoorState.CLOSED then
         self.state = DoorState.OPEN
         self.last_toggled = love.timer.getTime()
+        Door.OPEN_SOUND:play()
     end
 end
 
@@ -125,6 +128,7 @@ function Door:close()
     if self.state == DoorState.OPEN then
         self.state = DoorState.CLOSED
         self.last_toggled = love.timer.getTime()
+        Door.OPEN_SOUND:play()
     end
 end
 
@@ -161,11 +165,7 @@ function Door:lock_open()
     end
 
     self:lock()
-
-    if self.state == DoorState.CLOSED then
-        self.state = DoorState.OPEN
-        self.last_toggled = love.timer.getTime()
-    end
+    self:open()
 
     return self.state
 end
@@ -176,11 +176,7 @@ function Door:lock_closed()
     end
 
     self:lock()
-
-    if self.state == DoorState.OPEN then
-        self.state = DoorState.CLOSED
-        self.last_toggled = love.timer.getTime()
-    end
+    self:close()
 
     return self.state
 end
