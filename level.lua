@@ -100,6 +100,7 @@ function Level.new(geom_img_file, tile_resources, solid_tile_types)
     obj.cells = HashSet.new()
     obj.solid_cells = HashSet.new()
     obj.solid_door_cells = HashSet.new()
+    obj.locked_door_cells = HashSet.new()
 
     obj.tile_resources = tile_resources
     obj.solid_tile_types = solid_tile_types
@@ -214,11 +215,16 @@ function Level:cell_out_of_bounds(x, y)
            y < 0 or y >= self:height()
 end
 
-function Level:set_door_cell_solid(cell, is_solid)
-    if is_solid then
+function Level:set_door_cell_solid(cell, door)
+    if door:is_solid() then
         self.solid_door_cells:add(cell)
     else
         self.solid_door_cells:remove(cell)
+    end
+    if door.lock_state == DoorLockState.UNLOCKED then
+        self.locked_door_cells:remove(cell)
+    else
+        self.locked_door_cells:add(cell)
     end
 end
 
