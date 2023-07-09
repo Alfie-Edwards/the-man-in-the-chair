@@ -2,6 +2,7 @@ require "behaviours.behaviour"
 require "behaviours.patrol"
 require "behaviours.goto"
 require "entities.george"
+require "screens.lose"
 
 GuardBehaviour = {
     patrol_behaviour = nil,
@@ -93,12 +94,30 @@ function GuardBehaviour:not_pursuing()
     return behaviour_type ~= "Goto"
 end
 
+function GuardBehaviour:hit_george()
+    local george = self:get_george_entity()
+
+    if george == nil then
+        return false
+    end
+
+    local george_cell_x, george_cell_y = self.state.level:cell(george.x, george.y)
+    local cell_x, cell_y = self.state.level:cell(self.entity.x, self.entity.y)
+
+    return cell_x == george_cell_x and
+           cell_y == george_cell_y
+end
+
 function GuardBehaviour:update(dt)
     super().update(self, dt)
     if self.current_sub_behaviour then
         if self.current_sub_behaviour:update(dt) then
             self:patrol()
         end
+    end
+
+    if self:hit_george() then
+        view:set_content(LoseScreen.new())
     end
 
     if self:not_pursuing() and self:can_see_george() then
