@@ -1,4 +1,5 @@
 require "utils.vector"
+require "data_file"
 
 
 Level = {
@@ -17,33 +18,23 @@ Level = {
 setup_class(Level)
 
 function Level.from_file(filename)
-
-    local f = love.filesystem.lines(filename)
-
-    if not f then
-        error("couldn't open file "..filename.."!")
-    end
-
     local geom_img_file = nil
     local tile_resources = {}
     local solid_tile_types = {}
 
-    local stages = { GEOM_IMG = 1, TILE_MAPPING = 2, SOLID_TILES = 3 }
-    local stage = stages.GEOM_IMG
-
-    for line in f do
-        if line == "" then
-            stage = stage + 1
-        elseif stage == stages.GEOM_IMG then
+    local schema = DataFile.new({
+        ["geometry"] = function(line)
             geom_img_file = line
-        elseif stage == stages.TILE_MAPPING then
+        end,
+        ["tile mapping"] = function(line)
             local name, col_hex = string.match(line, "(.*): (.*)")
 
             tile_resources[name] = {
                 colour_code = hex2rgb(col_hex),
                 image = assets:get_image(name),
             }
-        elseif stage == stages.SOLID_TILES then
+        end,
+        ["solid tiles"] = function(line)
             local found = false
             for tile_type,_ in pairs(tile_resources) do
                 if tile_type == line then
@@ -56,12 +47,10 @@ function Level.from_file(filename)
             end
 
             table.insert(solid_tile_types, line)
-        else
-            error("too many empty lines in file!")
-        end
-    end
+        end,
+    })
 
-    assert(geom_img_file ~= nil)
+    schema:load(filename)
 
     return Level.new(geom_img_file, tile_resources, solid_tile_types)
 end
