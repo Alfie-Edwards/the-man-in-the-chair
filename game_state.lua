@@ -1,3 +1,5 @@
+require "alarm"
+require "jukebox"
 require "level"
 require "camera"
 require "entities.door"
@@ -11,9 +13,11 @@ setup_class(GameState, State)
 function GameState.new()
     local obj = magic_new({
         escaping = false,
+        alarm = Alarm.new(),
         level = Level.from_file("assets/level_data"),
         camera = Camera.new(),
         entities = {
+            Jukebox.new(0.5),
             George.new(),
             Door.new( 11,   5, Direction.DOWN),
             Door.new( 52,   8, Direction.DOWN),

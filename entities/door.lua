@@ -63,14 +63,14 @@ function Door.new(x, y, facing)
     obj.facing = facing
     obj.state = DoorState.CLOSED
     obj.lock_state = DoorLockState.UNLOCKED
-    obj.last_toggled = love.timer.getTime() - Door.ANIM_DURATION_SECONDS
+    obj.last_toggled = t_since(Door.ANIM_DURATION_SECONDS)
     obj.behaviour = DoorBehaviour.new()
 
     return obj
 end
 
 function Door:is_transitioning()
-    return love.timer.getTime() - self.last_toggled < Door.ANIM_DURATION_SECONDS
+    return t_since(self.last_toggled) < Door.ANIM_DURATION_SECONDS
 end
 
 function Door:is_solid()
@@ -188,7 +188,7 @@ function Door:sprite()
     end
     return sprite.sequence(seq,
                            Door.ANIM_DURATION_SECONDS,
-                           love.timer.getTime() - self.last_toggled)
+                           t_since(self.last_toggled))
 end
 
 function Door:pixel_pos(state)

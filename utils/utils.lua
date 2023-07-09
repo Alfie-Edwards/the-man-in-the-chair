@@ -236,6 +236,10 @@ function hex2rgb(hex)
             tonumber("0x"..hex:sub(5,6))}
 end
 
+function t_since(tstamp)
+    return love.timer.getTime() - tstamp
+end
+
 
 -- Import other utils files.
 require "utils.classes"

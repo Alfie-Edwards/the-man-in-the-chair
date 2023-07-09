@@ -23,7 +23,6 @@ function Game.new(mode)
     local hacking_hud = Hacking.new(obj.state)
     obj:add_child(hacking_hud)
 
-
     for _, entity in ipairs(obj.state.entities) do
         if entity.behaviour then
             entity.behaviour:start(entity, obj.state)
@@ -33,11 +32,19 @@ function Game.new(mode)
     return obj
 end
 
+-- TODO #temp
+t_alarm_toggled = -1
 function Game:update(dt)
     super().update(self, dt)
     self.state.camera:update(dt, self.state)
     for _, entity in ipairs(self.state.entities) do
         entity:update(dt, self.state)
+    end
+
+    -- TODO #temp: toggle alarm with spacebar
+    if love.keyboard.isDown("space") and t_since(t_alarm_toggled) > 1 then
+        self.state.alarm.is_on = not self.state.alarm.is_on
+        t_alarm_toggled = love.timer.getTime()
     end
 end
 
