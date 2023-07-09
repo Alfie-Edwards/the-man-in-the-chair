@@ -10,7 +10,7 @@ CutsceneSectionType = {
 Section = {
     section_type = nil,
     frames_per_second = nil,
-    audio = nil,
+    audio = {},  -- { name = { source = audio, when = int, loop = bool? }, ... }
     hold_frames = {},  -- { idx = seconds, ... }
 }
 setup_class(Section)
@@ -57,8 +57,7 @@ function Cutscene.new(frames, sections, finished_callback)
     obj.sections = sections
     obj.finished_callback = finished_callback
 
-    obj.current_section_num = 1
-    obj.t_started_current_section = love.timer.getTime()
+    obj:start_section(1)
 
     obj.finished = false
 
@@ -166,6 +165,51 @@ function Cutscene:draw()
     self.image:set_image(img)
 end
 
+function Cutscene:end_section(section_num)
+    local section = self.sections[section_num]
+
+    for _,a in pairs(section.audio) do
+        a.source:stop()
+    end
+end
+
+function Cutscene:start_section(section_num)
+    local section = self.sections[section_num]
+
+    if section == nil then
+        return false
+    end
+
+    self.current_section_num = section_num
+    self.t_started_current_section = love.timer.getTime()
+
+    for name,a in pairs(section.audio) do
+        if a.volume ~= nil then
+            a.source:setVolume(a.volume)
+        end
+
+        if a.loop == true then
+            a.source:setLooping(true)
+        end
+    end
+
+    return true
+end
+
+function Cutscene:play_sounds()
+    local section = self.sections[self.current_section_num]
+
+    for name,a in pairs(section.audio) do
+        if a.when ~= -1 and
+           a.played ~= true and
+           t_since(self.t_started_current_section) > a.when then
+            a.source:stop()
+            a.source:play()
+            a.played = true
+        end
+    end
+end
+
 function Cutscene:update(dt)
     super().update(self, dt)
 
@@ -173,11 +217,12 @@ function Cutscene:update(dt)
         return
     end
 
+    self:play_sounds()
+
     if love.keyboard.isDown("space") and t_since(self.t_started_current_section) > 0.2 then
-        if self.sections[self.current_section_num + 1] ~= nil then
-            self.current_section_num = self.current_section_num + 1
-            self.t_started_current_section = love.timer.getTime()
-        elseif self.finished_callback ~= nil then
+        self:end_section(self.current_section_num)
+        if (not self:start_section(self.current_section_num + 1)) and
+           self.finished_callback ~= nil then
             self.finished = true
             self.finished_callback()
         end

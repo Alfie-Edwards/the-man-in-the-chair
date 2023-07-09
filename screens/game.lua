@@ -29,11 +29,12 @@ function Game.new(mode)
         end
     end
 
+    -- TODO #temp
+    obj.t_alarm_toggled = love.timer.getTime()
+
     return obj
 end
 
--- TODO #temp
-t_alarm_toggled = -1
 function Game:update(dt)
     super().update(self, dt)
     self.state.camera:update(dt, self.state)
@@ -42,9 +43,9 @@ function Game:update(dt)
     end
 
     -- TODO #temp: toggle alarm with spacebar
-    if love.keyboard.isDown("space") and t_since(t_alarm_toggled) > 1 then
+    if love.keyboard.isDown("space") and t_since(self.t_alarm_toggled) > 1 then
         self.state.alarm.is_on = not self.state.alarm.is_on
-        t_alarm_toggled = love.timer.getTime()
+        self.t_alarm_toggled = love.timer.getTime()
     end
 end
 

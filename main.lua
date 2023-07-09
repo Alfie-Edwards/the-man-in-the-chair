@@ -18,19 +18,33 @@ function love.load()
     canvas = PixelCanvas.new({ 768, 432 })
 
     view = View.new()
-    view:set_content(Game.new())
-    -- view:set_content(Cutscene.from_dir(
-    --     "Cutscene/CutSceneOne",
-    --     {
-    --         Section.new(CutsceneSectionType.LOOP,    8),
-    --         Section.new(CutsceneSectionType.THROUGH, 8),
-    --         Section.new(CutsceneSectionType.THROUGH, 8),
-    --         Section.new(CutsceneSectionType.THROUGH, 8),
-    --     },
-    --     function()
-    --         view:set_content(MainMenu.new())
-    --     end
-    -- ))
+    -- view:set_content(Game.new())
+    view:set_content(Cutscene.from_dir(
+        "Cutscene/CutSceneOne",
+        {
+            Section.new(CutsceneSectionType.LOOP,    8,
+                { eyebrows = {
+                    source = love.audio.newSource("assets/Sound/EyebrowsVoice.wav", "stream"),
+                    when = 0,
+                    loop = true,
+                }}),
+            Section.new(CutsceneSectionType.THROUGH, 8),
+            Section.new(CutsceneSectionType.THROUGH, 8,
+                { eyebrows = {
+                    source = love.audio.newSource("assets/Sound/EyebrowsVoice.wav", "stream"),
+                    when = 1.9,
+                    loop = true,
+                }}),
+            Section.new(CutsceneSectionType.THROUGH, 8,
+                { george = {
+                    source = love.audio.newSource("assets/Sound/GeorgeVoice.wav", "static"),
+                    when = 3.5,
+                }}),
+        },
+        function()
+            view:set_content(MainMenu.new())
+        end
+    ))
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)

@@ -23,6 +23,7 @@ function Jukebox.new(volume)
     obj:silence()
 
     for _,audio in pairs(obj.tracks) do
+        audio:setLooping(true)
         audio:play()
     end
 

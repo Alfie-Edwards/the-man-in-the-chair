@@ -59,7 +59,12 @@ function MainMenu.new()
                 view:set_content(Cutscene.from_dir(
                     "Cutscene/CutSceneTwo",
                     {
-                        Section.new(CutsceneSectionType.THROUGH, 8),
+                        Section.new(CutsceneSectionType.THROUGH, 8,
+                            { agent = {
+                                source = love.audio.newSource("assets/Sound/AgentVoice.wav", "stream"),
+                                when = 2.8,
+                                loop = true,
+                            }}),
                         Section.new(CutsceneSectionType.THROUGH, 8),
                         Section.new(CutsceneSectionType.THROUGH, 8),
                     },
