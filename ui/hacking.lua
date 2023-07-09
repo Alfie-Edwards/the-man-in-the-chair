@@ -12,10 +12,12 @@ Hacking = {
     POINT_ICON_SPACING = 2,
     POINT_ICON_INSET_Y = 4,
 
+    door_open_icon_offset_x = nil,
+
     state = nil,
 
     points = nil,
-    door_map = {},
+    door_button_map = {},
     point_icons = {},
 }
 setup_class(Hacking, Element)
@@ -27,26 +29,60 @@ function Hacking.new(state)
 
     obj.points = Hacking.MAX_POINTS
 
-    -- hacking icons over each door
+    local close_img = assets:get_image("ui/HackDoor1Closed")
+    obj.door_open_icon_offset_x = close_img:getWidth()
+
+    -- icons over each door
     for _,ntt in ipairs(obj.state.entities) do
         if is_type(ntt, Door) then
-            local hack_door_button = ImageButton.new()
-            local pos = ntt:pixel_pos(obj.state)
+            local button_positions = obj:door_button_positions(ntt)
 
-            hack_door_button:set_properties({
-                image = assets:get_image("ui/Hack1"),
-                image_data = assets:get_image_data("ui/Hack1"),
+            -- 'close' icon
+            local close_door_button = ImageButton.new()
+            close_door_button:set_properties({
+                image = close_img,
+                image_data = assets:get_image_data("ui/HackDoor1Closed"),
                 x_align = "left",
                 y_align = "bottom",
-                x = pos.x - obj.state.camera.x,
-                y = pos.y - obj.state.camera.y,
+                x = button_positions.close.x,
+                y = button_positions.close.y,
                 click = function()
-                    obj:toggle_door(ntt)
+                    if ntt:is_locked() and
+                       ntt.state == DoorState.CLOSED and
+                       not ntt:is_transitioning() then
+                        obj:unlock_door(ntt)
+                    else
+                        obj:lock_door_closed(ntt)
+                    end
                 end,
             })
-            obj:add_child(hack_door_button)
+            obj:add_child(close_door_button)
 
-            obj.door_map[ntt] = hack_door_button
+            -- 'open' icon
+            local open_door_button = ImageButton.new()
+            open_door_button:set_properties({
+                image = assets:get_image("ui/HackDoor1Open"),
+                image_data = assets:get_image_data("ui/HackDoor1Open"),
+                x_align = "left",
+                y_align = "bottom",
+                x = button_positions.open.x,
+                y = button_positions.open.y,
+                click = function()
+                    if ntt:is_locked() and
+                       ntt.state == DoorState.OPEN and
+                       not ntt:is_transitioning() then
+                        obj:unlock_door(ntt)
+                    else
+                        obj:lock_door_open(ntt)
+                    end
+                end,
+            })
+            obj:add_child(open_door_button)
+
+            obj.door_button_map[ntt] = {
+                open = open_door_button,
+                close = close_door_button,
+            }
         end
     end
 
@@ -123,27 +159,100 @@ function Hacking:restore_point()
 
 end
 
-function Hacking:toggle_door(door)
+function Hacking:lock_door_open(door)
     if door:is_transitioning() then
         return
     end
 
-    if door.state == DoorState.CLOSED then
-        if self:use_point() then
-            door:toggle()
+    if door:is_locked() and door.state == DoorState.CLOSED then
+        door:lock_open()
+        return
+    end
+
+    if self:use_point() then
+        if door:lock_open() ~= DoorState.OPEN then
+            self:restore_point()
         end
-    else
-        door:toggle()
-        self:restore_point()
     end
 end
 
-function Hacking:update(dt)
-    for door, button in pairs(self.door_map) do
-        local pos = door:pixel_pos(self.state)
-        button:set_properties({
+function Hacking:lock_door_closed(door)
+    if door:is_transitioning() then
+        return
+    end
+
+    if door:is_locked() and door.state == DoorState.OPEN then
+        door:lock_closed()
+        return
+    end
+
+    if self:use_point() then
+        if door:lock_closed() ~= DoorState.CLOSED then
+            self:restore_point()
+        end
+    end
+end
+
+function Hacking:unlock_door(door)
+    door:unlock()
+    self:restore_point()
+end
+
+function Hacking:door_button_positions(door)
+    local pos = door:pixel_pos(self.state)
+
+    return {
+        close = {
             x = pos.x - self.state.camera.x,
             y = pos.y - self.state.camera.y,
+        },
+        open = {
+            x = (pos.x + self.door_open_icon_offset_x) - self.state.camera.x,
+            y = pos.y - self.state.camera.y,
+        },
+    }
+end
+
+function Hacking:update(dt)
+    for door, buttons in pairs(self.door_button_map) do
+        local button_positions = self:door_button_positions(door)
+
+        buttons.close:set_properties({
+            x = button_positions.close.x,
+            y = button_positions.close.y,
+        })
+
+        buttons.open:set_properties({
+            x = button_positions.open.x,
+            y = button_positions.open.y,
         })
     end
+end
+
+function Hacking:draw()
+    for door, buttons in pairs(self.door_button_map) do
+        -- draw highlights against 'active' buttons
+        if door:is_locked() then
+            love.graphics.setColor({1, 1, 0, 1})
+            if door.state == DoorState.OPEN then
+                local icon_width = buttons.open.image:getWidth()
+                local hl_rad = (icon_width + 5) / 2
+                love.graphics.circle(
+                    "fill",
+                    buttons.open.x + 0.75 * hl_rad,
+                    (buttons.open.y - icon_width) + 0.75 * hl_rad,
+                    hl_rad)
+            elseif door.state == DoorState.CLOSED then
+                local icon_width = buttons.close.image:getWidth()
+                local hl_rad = (icon_width + 5) / 2
+                love.graphics.circle(
+                    "fill",
+                    buttons.close.x + 0.75 * hl_rad,
+                    (buttons.close.y - icon_width) + 0.75 * hl_rad,
+                    hl_rad)
+            end
+        end
+    end
+
+    super().draw(self)
 end

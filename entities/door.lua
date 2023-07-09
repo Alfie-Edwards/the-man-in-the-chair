@@ -4,6 +4,7 @@ require "behaviours.door"
 require "sprite"
 
 DoorState = { CLOSED = 1, OPEN = 2 }
+DoorLockState = { LOCKED = 1, UNLOCKED = 2 }
 
 Door = {
     SPRITES = sprite.make_set("Textures/", {
@@ -46,6 +47,7 @@ Door = {
     y = nil,
     facing = nil,
     state = nil,
+    lock_state = nil,
 
     last_toggled = nil,
 }
@@ -58,6 +60,7 @@ function Door.new(x, y, facing)
     obj.y = y
     obj.facing = facing
     obj.state = DoorState.CLOSED
+    obj.lock_state = DoorLockState.UNLOCKED
     obj.last_toggled = love.timer.getTime() - Door.ANIM_DURATION_SECONDS
     obj.behaviour = DoorBehaviour.new()
 
@@ -111,18 +114,73 @@ function Door:active_cells()
     end
 end
 
+function Door:open()
+    if self.state == DoorState.CLOSED then
+        self.state = DoorState.OPEN
+        self.last_toggled = love.timer.getTime()
+    end
+end
+
+function Door:close()
+    if self.state == DoorState.OPEN then
+        self.state = DoorState.CLOSED
+        self.last_toggled = love.timer.getTime()
+    end
+end
+
 function Door:toggle()
     if self:is_transitioning() then
         return self.state
     end
 
     if self.state == DoorState.CLOSED then
-        self.state = DoorState.OPEN
+        self:open()
     elseif self.state == DoorState.OPEN then
-        self.state = DoorState.CLOSED
+        self:close()
     end
 
-    self.last_toggled = love.timer.getTime()
+    return self.state
+end
+
+function Door:is_locked()
+    return self.lock_state == DoorLockState.LOCKED
+end
+
+function Door:lock()
+    self.lock_state = DoorLockState.LOCKED
+end
+
+function Door:unlock()
+    self.lock_state = DoorLockState.UNLOCKED
+    self:close()
+end
+
+function Door:lock_open()
+    if self:is_transitioning() then
+        return self.state
+    end
+
+    self:lock()
+
+    if self.state == DoorState.CLOSED then
+        self.state = DoorState.OPEN
+        self.last_toggled = love.timer.getTime()
+    end
+
+    return self.state
+end
+
+function Door:lock_closed()
+    if self:is_transitioning() then
+        return self.state
+    end
+
+    self:lock()
+
+    if self.state == DoorState.OPEN then
+        self.state = DoorState.CLOSED
+        self.last_toggled = love.timer.getTime()
+    end
 
     return self.state
 end
