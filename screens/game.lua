@@ -29,23 +29,15 @@ function Game.new(mode)
         end
     end
 
-    -- TODO #temp
-    obj.t_alarm_toggled = love.timer.getTime()
-
     return obj
 end
 
 function Game:update(dt)
     super().update(self, dt)
     self.state.camera:update(dt, self.state)
+    self.state.alarm.is_on = false
     for _, entity in ipairs(self.state.entities) do
         entity:update(dt, self.state)
-    end
-
-    -- TODO #temp: toggle alarm with spacebar
-    if love.keyboard.isDown("space") and t_since(self.t_alarm_toggled) > 1 then
-        self.state.alarm.is_on = not self.state.alarm.is_on
-        self.t_alarm_toggled = love.timer.getTime()
     end
 end
 

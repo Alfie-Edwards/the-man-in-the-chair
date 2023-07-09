@@ -20,7 +20,7 @@ end
 
 function Sweep:can_see_george()
     if self.entity.vision == nil then
-        return false
+        return
     end
 
     local george = nil
@@ -28,39 +28,42 @@ function Sweep:can_see_george()
     for _,ntt in ipairs(self.state.entities) do
         if type_string(ntt) == "George" then
             george = ntt
-            return ntt
         end
     end
 
     if george == nil then
-        return false
+        return
     end
 
-    local george_cell_x, george_cell_y = self.state.level:cell(george.x, george.y)
+    local george_cell = Cell.new(self.state.level:cell(george.x, george.y))
 
-    for _, cell in pairs(self.entity.vision) do
-        if cell.x == george_cell_x and
-           cell.y == george_cell_y then
-           
-           return true
+    if self.entity.vision:contains(george_cell) then
+
+        self.state.alarm.is_on = true
+        local closest_guard = nil
+        local closest_guard_dist = math.huge
+        for _,ntt in ipairs(self.state.entities) do
+            if type_string(ntt) == "Guard" then
+                local d = sq_dist(ntt.x, ntt.y, george.x, george.y)
+                if d < closest_guard_dist then
+                    closest_guard = ntt
+                    closest_guard_dist = d
+                end
+            end
         end
+        if closest_guard == nil then
+            return
+        end
+        if is_type(closest_guard.behaviour.sub_behaviour, "Investigate") then
+            return
+        end
+        closest_guard.behaviour:set_sub_behaviour(Investigate.new(self.entity.x + self.state.level.cell_length_pixels, self.entity.y + self.state.level.cell_length_pixels, 3, 3, 2))
     end
-
-    return false
 end
 
 
 function Sweep:update(dt)
     super().update(self, dt)
-
-    if self:can_see_george() then
-        for _,ntt in ipairs(self.state.entities) do
-            if type_string(ntt) == "Guard" then
-                -- ntt.behaviour:set_sub_behaviour(Investigate.new(self.entity.x + self.state.level.cell_length_pixels, self.entity.y + self.state.level.cell_length_pixels, 3, 3, 2))
-                return false
-            end
-        end
-    end
-
+    self:can_see_george()
     return false
 end

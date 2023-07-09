@@ -75,7 +75,7 @@ function Guard:update(dt, state)
         self.y,
         direction_to_angle(self.direction),
         SecurityCamera.FOV,
-        0.1 * state.level.cell_length_pixels)
+        SecurityCamera.VIEW_DISTANCE * state.level.cell_length_pixels)
 end
 
 function Guard:draw(state)
