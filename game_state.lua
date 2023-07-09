@@ -10,6 +10,7 @@ setup_class(GameState, State)
 
 function GameState.new()
     local obj = magic_new({
+        escaping = false,
         level = Level.from_file("assets/level_data"),
         camera = Camera.new(),
         entities = {
@@ -30,10 +31,12 @@ function GameState.new()
             Door.new( 64,  21, Direction.UP),
             Door.new( 19,  22, Direction.UP),
             Guard.new(
-                {x = 64, y = 64},
-                {x = 128, y = 64},
-                {x = 128, y = 128},
-                {x = 64, y = 128}
+                {
+                    {x = 64, y = 64},
+                    {x = 128, y = 64},
+                    {x = 128, y = 128},
+                    {x = 64, y = 128}
+                }
             ),
             SecurityCamera.new(72, 72, math.pi * 1.5, math.pi * 0.5),
         },

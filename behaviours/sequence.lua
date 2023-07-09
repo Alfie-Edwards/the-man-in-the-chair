@@ -26,6 +26,7 @@ function Sequence:set_i(i)
 end
 
 function Sequence:update(dt)
+    super().update(self, dt)
     if self.sub_behaviours[self.i]:update(dt) then
         if self.i == #self.sub_behaviours then
             return true
@@ -36,5 +37,6 @@ function Sequence:update(dt)
 end
 
 function Sequence:draw()
+    super().draw(self)
     self.sub_behaviours[self.i]:draw()
 end

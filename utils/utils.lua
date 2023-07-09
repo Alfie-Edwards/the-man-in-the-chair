@@ -245,3 +245,5 @@ require "utils.vector"
 require "utils.event"
 require "utils.state"
 require "utils.hash_set"
+require "utils.a-star"
+

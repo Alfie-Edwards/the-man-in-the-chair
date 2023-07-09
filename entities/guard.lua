@@ -1,6 +1,5 @@
 require "entities.movable"
-require "behaviours.patrol"
-require "behaviours.investigate"
+require "behaviours.guard"
 require "direction"
 
 
@@ -48,16 +47,14 @@ Guard = {
 }
 setup_class(Guard, Movable)
 
-function Guard.new(...)
+function Guard.new(patrol_points)
     local obj = magic_new()
 
-    local points = {...}
-    assert(#points)
-    obj.x = points[1].x
-    obj.y = points[1].y
+    assert(#patrol_points)
+    obj.x = patrol_points[1].x
+    obj.y = patrol_points[1].y
     obj.speed = Guard.SPEED
-    -- obj.behaviour = Patrol.new(unpack(points))
-    obj.behaviour = Investigate.new(128, 128, 32, 3, 2)
+    obj.behaviour = GuardBehaviour.new(patrol_points)
     obj.direction = Direction.DOWN
     obj.vision = HashSet.new()
     obj.moved_last = false

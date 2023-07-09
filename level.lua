@@ -8,6 +8,7 @@ Level = {
     cells = nil,
     solid_cells = nil,
     solid_door_cells = nil,
+    door_cells = nil,
 
     tile_resources = nil,
     solid_tile_types = nil,
@@ -213,11 +214,11 @@ function Level:cell_out_of_bounds(x, y)
            y < 0 or y >= self:height()
 end
 
-function Level:set_door_cell_solid(x, y, is_solid)
+function Level:set_door_cell_solid(cell, is_solid)
     if is_solid then
-        self.solid_door_cells:add(Cell.new(x, y))
+        self.solid_door_cells:add(cell)
     else
-        self.solid_door_cells:remove(Cell.new(x, y))
+        self.solid_door_cells:remove(cell)
     end
 end
 

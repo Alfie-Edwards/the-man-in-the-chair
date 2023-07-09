@@ -14,6 +14,7 @@ function Turn.new(angle)
 end
 
 function Turn:update(dt)
+    super().update(self, dt)
     local d = self.angle - self.entity.angle
     d = d + (2 * math.pi)
     d = d % (2 * math.pi)

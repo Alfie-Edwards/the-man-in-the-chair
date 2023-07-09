@@ -4,9 +4,9 @@ require "behaviours.goto"
 Patrol = {}
 setup_class(Patrol, Loop)
 
-function Patrol.new(...)
+function Patrol.new(patrol_points)
     local gotos = {}
-    for i, point in ipairs({...}) do
+    for i, point in ipairs(patrol_points) do
         gotos[i] = Goto.new(point.x, point.y)
     end
     local obj = magic_new(unpack(gotos))

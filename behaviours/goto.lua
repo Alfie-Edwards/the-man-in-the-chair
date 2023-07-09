@@ -1,20 +1,20 @@
 require "behaviours.behaviour"
-require "behaviours.a-star"
-
 
 Goto = {
     x = nil,
     y = nil,
     i = nil,
     path = nil,
+    lookahead = nil,
 }
 setup_class(Goto, Behaviour)
 
-function Goto.new(x, y)
+function Goto.new(x, y, lookahead)
     local obj = magic_new()
 
     obj.x = x
     obj.y = y
+    obj.lookahead = lookahead or 0
 
     return obj
 end
@@ -26,8 +26,29 @@ function Goto:start(entity, state)
 end
 
 function Goto:update(dt)
+    super().update(self, dt)
     if not self.path then
         return true
+    end
+
+    for lookahead_i = self.i, math.min(self.i + self.lookahead, #self.path) do
+        if not self.entity:accessible_cells(self.state):contains(self.path[lookahead_i]) then
+            -- If there are solid cells ahead.
+            while not self.entity:accessible_cells(self.state):contains(self.path[self.i]) do
+                -- Walk back and terminate.
+                if self.i == 1 then
+                    -- If we find no accessible tiles behind in the path, just terminate.
+                    return true
+                end
+                self.i = self.i - 1
+            end
+
+            for cull_i = self.i + 1, #self.path do
+                -- Cull the end of the path.
+                self.path[cull_i] = nil
+                break
+            end
+        end
     end
 
     local speed = self.entity.speed * dt
@@ -69,6 +90,7 @@ function Goto:update(dt)
 end
 
 function Goto:draw()
+    super().draw(self)
     if self.path then
         love.graphics.line(
             self.entity.x,
@@ -92,6 +114,6 @@ function Goto:pathfind()
         Cell.new(self.state.level:cell(self.entity.x, self.entity.y)),
         Cell.new(self.state.level:cell(self.x, self.y)),
         self.entity:accessible_cells(self.state),
-        true
+        false
     )
 end

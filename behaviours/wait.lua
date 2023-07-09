@@ -20,5 +20,6 @@ function Wait:start(entity, state)
 end
 
 function Wait:update(dt)
+    super().update(self, dt)
     return (love.timer.getTime() - self.t0) >= self.t
 end

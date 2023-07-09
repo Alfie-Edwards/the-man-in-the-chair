@@ -3,10 +3,12 @@ HashSet = {
 }
 setup_class(HashSet)
 
-function HashSet.new()
-    local obj = {}
+function HashSet.new(...)
+    local obj = magic_new()
 
-    setup_instance(obj, HashSet)
+    for _, item in ipairs({...}) do
+        obj:add(item)
+    end
 
     return obj
 end

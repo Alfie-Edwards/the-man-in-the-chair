@@ -1,5 +1,5 @@
 require "entities.movable"
-require "behaviours.goto"
+require "behaviours.george"
 require "direction"
 
 George = {
@@ -53,7 +53,7 @@ function George.new()
     obj.x = George.SPAWN_X
     obj.y = George.SPAWN_Y
     obj.speed = George.SPEED
-    obj.behaviour = Goto.new(200, 300)
+    obj.behaviour = GeorgeBehaviour.new()
     obj.direction = Direction.DOWN
 
     return obj

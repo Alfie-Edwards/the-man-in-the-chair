@@ -72,18 +72,42 @@ function Door:is_solid()
     return self.state == DoorState.CLOSED or self:is_transitioning()
 end
 
+function Door:cell_before()
+    if self.facing == Direction.RIGHT then
+        return Cell.new(self.state.level:cell(self.x - 1, self.y))
+    elseif self.facing == Direction.UP then
+        return Cell.new(self.state.level:cell(self.x, self.y + 1))
+    elseif self.facing == Direction.LEFT then
+        return Cell.new(self.state.level:cell(self.x + 1, self.y))
+    else
+        return Cell.new(self.state.level:cell(self.x, self.y - 1))
+    end
+end
+
+function Door:cell_after()
+    if self.facing == Direction.RIGHT then
+        return Cell.new(self.state.level:cell(self.x + 1, self.y))
+    elseif self.facing == Direction.UP then
+        return Cell.new(self.state.level:cell(self.x, self.y - 1))
+    elseif self.facing == Direction.LEFT then
+        return Cell.new(self.state.level:cell(self.x - 1, self.y))
+    else
+        return Cell.new(self.state.level:cell(self.x, self.y + 1))
+    end
+end
+
 function Door:active_cells()
     if self.facing == Direction.UP or
        self.facing == Direction.DOWN then
-        return {
-            { x = self.x, y = self.y },
-            { x = self.x + 1, y = self.y },
-        }
+        return HashSet.new(
+            Cell.new(self.x, self.y),
+            Cell.new(self.x + 1, self.y)
+        )
     else
-        return {
-            { x = self.x, y = self.y },
-            { x = self.x, y = self.y + 1 },
-        }
+        return HashSet.new(
+            Cell.new(self.x, self.y),
+            Cell.new(self.x, self.y + 1)
+        )
     end
 end
 

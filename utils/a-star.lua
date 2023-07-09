@@ -63,16 +63,21 @@ function lowest_f_score ( set, f_score )
 	return bestNode
 end
 
-function neighbor_nodes ( theNode, nodes )
+function neighbor_nodes ( theNode, nodes, goal )
 	local neighbors = {
 		Cell.new(theNode.x - 1, theNode.y),
 		Cell.new(theNode.x + 1, theNode.y),
 		Cell.new(theNode.x, theNode.y - 1),
 		Cell.new(theNode.x, theNode.y + 1),
+		Cell.new(theNode.x - 1, theNode.y - 1),
+		Cell.new(theNode.x + 1, theNode.y + 1),
+		Cell.new(theNode.x + 1, theNode.y - 1),
+		Cell.new(theNode.x - 1, theNode.y + 1),
 	}
 	local i = 1
 	while i <= #neighbors do
-		if not nodes:contains(neighbors[i]) then
+		-- Goal is always a valid neighbor
+		if not (goal == neighbors[i] or nodes:contains(neighbors[i])) then
 			neighbors[i] = neighbors[#neighbors]
 			neighbors[#neighbors] = nil
 		end
@@ -136,7 +141,7 @@ function a_star ( start, goal, nodes )
 		remove_node ( openset, current )		
 		table.insert ( closedset, current )
 		
-		local neighbors = neighbor_nodes ( current, nodes )
+		local neighbors = neighbor_nodes ( current, nodes, goal )
 		for _, neighbor in ipairs ( neighbors ) do 
 			if not_in ( closedset, neighbor ) then
 			

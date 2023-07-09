@@ -27,6 +27,7 @@ function Loop:set_i(i)
 end
 
 function Loop:update(dt)
+    super().update(self, dt)
     if self.sub_behaviours[self.i]:update(dt) then
         if self.i == #self.sub_behaviours then
             self:set_i(1)
@@ -38,5 +39,6 @@ function Loop:update(dt)
 end
 
 function Loop:draw()
+    super().draw(self)
     self.sub_behaviours[self.i]:draw(self.entity, self.state)
 end
