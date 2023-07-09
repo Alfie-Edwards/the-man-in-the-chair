@@ -115,6 +115,11 @@ function GuardBehaviour:update(dt)
     end
 
     if self:hit_george() then
+        for _, e in ipairs(self.state.entities) do
+            if type_string(e) == "Jukebox" then
+                e:silence()
+            end
+        end
         view:set_content(LoseScreen.new())
     end
 

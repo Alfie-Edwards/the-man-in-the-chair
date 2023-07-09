@@ -23,6 +23,9 @@ function WinScreen.new()
             image = assets:get_image("ui/YouDidntDie"),
             width = canvas:width(),
             height = canvas:height(),
+            click = function()
+                view:set_content(MainMenu.new())
+            end
         }
     )
     obj:add_child(bg)

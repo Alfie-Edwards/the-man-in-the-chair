@@ -36,6 +36,11 @@ end
 function GeorgeBehaviour:update(dt)
     super().update(self, dt)
     if self.entity.x and self.entity.x > 123 * 16 then
+        for _, e in ipairs(self.state.entities) do
+            if type_string(e) == "Jukebox" then
+                e:silence()
+            end
+        end
         view:set_content(WinScreen.new())
     end
     if self.sub_behaviour then

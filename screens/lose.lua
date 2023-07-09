@@ -24,6 +24,9 @@ function LoseScreen.new()
             image = assets:get_image("ui/YouDied"),
             width = canvas:width(),
             height = canvas:height(),
+            click = function()
+                view:set_content(MainMenu.new())
+            end
         }
     )
     obj:add_child(bg)

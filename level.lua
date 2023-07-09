@@ -286,7 +286,7 @@ function raycast(level, x, y, angle, fov, max_distance)
     local angle_start = angle - fov / 2
     local angle_end = angle - fov / 2
     local arc_length = max_distance * fov
-    local rays = math.max(2, math.ceil(arc_length))
+    local rays = math.max(2, math.ceil(arc_length * 2))
     local d_angle = 0
     local inc = max_distance / math.ceil(max_distance)
     for i=1,rays do

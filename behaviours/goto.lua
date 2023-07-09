@@ -107,6 +107,6 @@ function Goto:pathfind()
         Cell.new(self.state.level:cell(self.entity.x, self.entity.y)),
         Cell.new(self.state.level:cell(self.x, self.y)),
         self.state.level.cells - self.state.level.solid_cells,
-        false
+        true
     )
 end
