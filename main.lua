@@ -18,7 +18,8 @@ function love.load()
     canvas = PixelCanvas.new({ 768, 432 })
 
     view = View.new()
-    -- view:set_content(Game.new())
+    local cutscene_music = love.audio.newSource("assets/Sound/MusicIntro.wav", "stream")
+    cutscene_music:setVolume(0.75)
     view:set_content(Cutscene.from_dir(
         "Cutscene/CutSceneOne",
         {
@@ -41,6 +42,7 @@ function love.load()
                     when = 3.5,
                 }}),
         },
+        cutscene_music,
         function()
             view:set_content(MainMenu.new())
         end

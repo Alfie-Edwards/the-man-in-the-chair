@@ -5,7 +5,9 @@ require "ui.triple_button"
 require "ui.table"
 require "screens.game"
 
-MainMenu = {}
+MainMenu = {
+    bg_music = nil,
+}
 
 setup_class(MainMenu, SimpleElement)
 
@@ -18,6 +20,11 @@ function MainMenu.new()
             height = canvas:height(),
         }
     )
+
+    obj.bg_music = love.audio.newSource("assets/Sound/MusicIntro.wav", "stream")
+    obj.bg_music:setVolume(0.75)
+    obj.bg_music:setLooping(true)
+    obj.bg_music:play()
 
     local bg = Image.new()
     bg:set_properties(
@@ -56,6 +63,15 @@ function MainMenu.new()
             width = button_play_width,
             height = button_play_width * button_play_aspect,
             click = function()
+                -- TODO #cleanup: assumes we're the view content; we don't have
+                --                access to `self`
+                if view:get_content() ~= nil and
+                   view:get_content().bg_music ~= nil then
+                    view:get_content().bg_music:stop()
+                end
+
+                local cutscene_music = love.audio.newSource("assets/Sound/MusicIntro.wav", "stream")
+                cutscene_music:setVolume(0.75)
                 view:set_content(Cutscene.from_dir(
                     "Cutscene/CutSceneTwo",
                     {
@@ -68,6 +84,7 @@ function MainMenu.new()
                         Section.new(CutsceneSectionType.THROUGH, 8),
                         Section.new(CutsceneSectionType.THROUGH, 8),
                     },
+                    cutscene_music,
                     function()
                         view:set_content(Game.new())
                     end

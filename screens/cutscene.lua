@@ -32,6 +32,7 @@ end
 Cutscene = {
     frames = nil,
     sections = nil,
+    bg_music = nil,
     finished_callback = nil,
 
     image = nil,
@@ -43,7 +44,7 @@ Cutscene = {
 }
 setup_class(Cutscene, SimpleElement)
 
-function Cutscene.new(frames, sections, finished_callback)
+function Cutscene.new(frames, sections, bg_music, finished_callback)
     local obj = magic_new()
 
     obj:set_properties(
@@ -55,7 +56,13 @@ function Cutscene.new(frames, sections, finished_callback)
 
     obj.frames = frames
     obj.sections = sections
+    obj.bg_music = bg_music
     obj.finished_callback = finished_callback
+
+    if obj.bg_music ~= nil then
+        obj.bg_music:setLooping(true)
+        obj.bg_music:play()
+    end
 
     obj:start_section(1)
 
@@ -74,7 +81,7 @@ function Cutscene.new(frames, sections, finished_callback)
     return obj
 end
 
-function Cutscene.from_dir(dirname, sections, finished_callback)
+function Cutscene.from_dir(dirname, sections, bg_music, finished_callback)
     files = love.filesystem.getDirectoryItems("assets/"..dirname)
 
     if files == nil then
@@ -87,23 +94,23 @@ function Cutscene.from_dir(dirname, sections, finished_callback)
         local section_num,frame_num = string.match(filename, ".*([0-9]+)-([0-9]+).png")
 
         if section_num == nil or frame_num == nil then
-            error("invalid file "..filename)
-        end
+            print("WARNING: ignoring invalid file "..filename)
+        else
+            section_num = tonumber(section_num)
+            frame_num = tonumber(frame_num)
 
-        section_num = tonumber(section_num)
-        frame_num = tonumber(frame_num)
+            if section_num == nil or frame_num == nil then
+                error("invalid file "..filename)
+            end
 
-        if section_num == nil or frame_num == nil then
-            error("invalid file "..filename)
+            if frames[section_num] == nil then
+                frames[section_num] = {}
+            end
+            frames[section_num][frame_num] = love.graphics.newImage("assets/"..dirname.."/"..filename)
         end
-
-        if frames[section_num] == nil then
-            frames[section_num] = {}
-        end
-        frames[section_num][frame_num] = love.graphics.newImage("assets/"..dirname.."/"..filename)
     end
 
-    return Cutscene.new(frames, sections, finished_callback)
+    return Cutscene.new(frames, sections, bg_music, finished_callback)
 end
 
 function Cutscene:section_duration(section_num)
@@ -210,6 +217,18 @@ function Cutscene:play_sounds()
     end
 end
 
+function Cutscene:finish()
+    self.finished = true
+
+    if self.bg_music ~= nil then
+        self.bg_music:stop()
+    end
+
+    if self.finished_callback ~= nil then
+        self.finished_callback()
+    end
+end
+
 function Cutscene:update(dt)
     super().update(self, dt)
 
@@ -221,10 +240,9 @@ function Cutscene:update(dt)
 
     if love.keyboard.isDown("space") and t_since(self.t_started_current_section) > 0.2 then
         self:end_section(self.current_section_num)
-        if (not self:start_section(self.current_section_num + 1)) and
-           self.finished_callback ~= nil then
-            self.finished = true
-            self.finished_callback()
+
+        if (not self:start_section(self.current_section_num + 1)) then
+            self:finish()
         end
     end
 end
