@@ -210,6 +210,14 @@ function Door:pixel_pos(state)
     }
 end
 
+function Door:any_guard_near(state)
+    for _, e in ipairs(state.entities) do
+        if type_string(e) == "Guard" and sq_dist(e.x, e.y, (self.x + 0.5) * state.level.cell_length_pixels, (self.x + 0.5) * state.level.cell_length_pixels) < 1.5 then
+            return true
+        end
+    end
+end
+
 function Door:draw_cells(state)
     love.graphics.setColor({0, 0, 1, 0.5})
     for _,c in ipairs(self:active_cells()) do
