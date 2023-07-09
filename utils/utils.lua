@@ -52,6 +52,10 @@ function shuffle_list(list)
   end
 end
 
+function choice(list)
+    return list[math.random(#list)]
+end
+
 function concat(a, b)
     local ab = {}
     table.move(a, 1, #a, 1, ab)

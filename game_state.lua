@@ -17,7 +17,7 @@ function GameState.new()
         level = Level.from_file("assets/level_data"),
         camera = Camera.new(),
         entities = {
-            Jukebox.new(0.5),
+            Jukebox.new(0.1),
             George.new(),
             Door.new( 11,   5, Direction.DOWN),
             Door.new( 52,   8, Direction.DOWN),

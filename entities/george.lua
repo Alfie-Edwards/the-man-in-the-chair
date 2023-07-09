@@ -42,6 +42,7 @@ George = {
         }),
     },
     WALK_CYCLE_PERIOD = 0.75,
+    HAS_FOOTSTEP_SOUNDS = true,
 
     speed = nil,
 }
