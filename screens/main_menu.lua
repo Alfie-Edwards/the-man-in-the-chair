@@ -56,7 +56,17 @@ function MainMenu.new()
             width = button_play_width,
             height = button_play_width * button_play_aspect,
             click = function()
-                view:set_content(Game.new())
+                view:set_content(Cutscene.from_dir(
+                    "Cutscene/CutSceneTwo",
+                    {
+                        Section.new(CutsceneSectionType.THROUGH, 8),
+                        Section.new(CutsceneSectionType.THROUGH, 8),
+                        Section.new(CutsceneSectionType.THROUGH, 8),
+                    },
+                    function()
+                        view:set_content(Game.new())
+                    end
+                ))
             end,
         }
     )

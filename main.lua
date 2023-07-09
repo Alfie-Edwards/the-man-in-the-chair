@@ -5,6 +5,7 @@ require "pixelcanvas"
 require "ui.view"
 require "screens.game"
 require "screens.main_menu"
+require "screens.cutscene"
 
 function love.load()
 
@@ -18,6 +19,18 @@ function love.load()
 
     view = View.new()
     view:set_content(Game.new())
+    -- view:set_content(Cutscene.from_dir(
+    --     "Cutscene/CutSceneOne",
+    --     {
+    --         Section.new(CutsceneSectionType.LOOP,    8),
+    --         Section.new(CutsceneSectionType.THROUGH, 8),
+    --         Section.new(CutsceneSectionType.THROUGH, 8),
+    --         Section.new(CutsceneSectionType.THROUGH, 8),
+    --     },
+    --     function()
+    --         view:set_content(MainMenu.new())
+    --     end
+    -- ))
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
