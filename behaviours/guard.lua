@@ -10,6 +10,8 @@ GuardBehaviour = {
     current_sub_behaviour = nil,
 
     george = nil,
+
+    t_last = nil,
 }
 setup_class(GuardBehaviour, Behaviour)
 
@@ -17,6 +19,8 @@ function GuardBehaviour.new(patrol_points)
     local obj = magic_new()
 
     obj.patrol_behaviour = Patrol.new(patrol_points)
+
+    obj.t_last = love.timer.getTime()
 
     return obj
 end
@@ -34,7 +38,19 @@ function GuardBehaviour:set_sub_behaviour(behaviour)
 end
 
 function GuardBehaviour:investigate(x, y)
-    self:set_sub_behaviour(Goto.new(x, y))
+    -- if self:not_pursuing() then
+    --     self:set_sub_behaviour(Goto.new(x, y))
+    --     return
+    -- end
+
+    if t_since(self.t_last) > 3 then
+        self:set_sub_behaviour(Goto.new(x, y))
+        -- self.current_sub_behaviour.x = x
+        -- self.current_sub_behaviour.y = y
+        -- self.current_sub_behaviour:start(self.entity, self.state)
+
+        self.t_last = love.timer.getTime()
+    end
 end
 
 function GuardBehaviour:patrol()
@@ -70,16 +86,9 @@ function GuardBehaviour:can_see_george()
         return false
     end
 
-    local george_cell_x, george_cell_y = self.state.level:cell(george.x, george.y)
+    local george_cell = Cell.new(self.state.level:cell(george.x, george.y))
 
-    for _,cell in pairs(self.entity.vision) do
-        if cell.x == george_cell_x and
-           cell.y == george_cell_y then
-           return true
-        end
-    end
-
-    return false
+    return self.entity.vision:contains(george_cell)
 end
 
 function GuardBehaviour:not_pursuing()
@@ -123,7 +132,8 @@ function GuardBehaviour:update(dt)
         view:set_content(LoseScreen.new())
     end
 
-    if self:not_pursuing() and self:can_see_george() then
+    -- if self:not_pursuing() and self:can_see_george() then
+    if self:can_see_george() then
         local george = self:get_george_entity()
         self:investigate(george.x, george.y)
     end
