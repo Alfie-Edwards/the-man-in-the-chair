@@ -21,7 +21,7 @@ function MainMenu.new()
         }
     )
 
-    obj.bg_music = love.audio.newSource("assets/Sound/MusicIntro.wav", "stream")
+    obj.bg_music = love.audio.newSource("assets/Sound/MusicMenu.wav", "stream")
     obj.bg_music:setVolume(0.75)
     obj.bg_music:setLooping(true)
     obj.bg_music:play()
