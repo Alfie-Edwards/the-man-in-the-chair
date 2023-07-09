@@ -252,6 +252,15 @@ function iter_size(x)
     return n
 end
 
+function normalize_angle(a)
+    a = a + (2 * math.pi)
+    a = a % (2 * math.pi)
+    if a > math.pi then
+        a = a - (math.pi * 2)
+    end
+    return a
+end
+
 
 -- Import other utils files.
 require "utils.classes"

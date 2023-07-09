@@ -34,7 +34,6 @@ function GuardBehaviour:set_sub_behaviour(behaviour)
 end
 
 function GuardBehaviour:investigate(x, y)
-    print("GuardBehaviour:investigate("..x..", "..y..")")
     self:set_sub_behaviour(Goto.new(x, y))
 end
 
@@ -76,7 +75,6 @@ function GuardBehaviour:can_see_george()
     for _,cell in pairs(self.entity.vision) do
         if cell.x == george_cell_x and
            cell.y == george_cell_y then
-           print('seen')
            return true
         end
     end

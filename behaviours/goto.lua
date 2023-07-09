@@ -100,25 +100,6 @@ end
 
 function Goto:draw()
     super().draw(self)
-
-    if self.path then
-        love.graphics.line(
-            self.entity.x,
-            self.entity.y,
-            (self.path[self.i].x + 0.5) * self.state.level.cell_length_pixels,
-            (self.path[self.i].y + 0.5) * self.state.level.cell_length_pixels
-        )
-        for i = self.i + 1, #self.path do
-            love.graphics.line(
-                (self.path[i].x + 0.5) * self.state.level.cell_length_pixels,
-                (self.path[i].y + 0.5) * self.state.level.cell_length_pixels,
-                (self.path[i - 1].x + 0.5) * self.state.level.cell_length_pixels,
-                (self.path[i - 1].y + 0.5) * self.state.level.cell_length_pixels
-            )
-        end
-        love.graphics.setColor({0.2, 0, 0, 1})
-        love.graphics.rectangle("fill", self.x - 4, self.y - 4, 8, 8)
-    end
 end
 
 function Goto:pathfind()

@@ -55,8 +55,8 @@ function GotoTarget:update(dt)
             return true
         end
         self.goto_target = Goto.new(
-            self.target_door.x * self.state.level.cell_length_pixels,
-            self.target_door.y * self.state.level.cell_length_pixels,
+            self.target_door.x,
+            self.target_door.y,
             3 * self.state.level.cell_length_pixels
         )
         self.goto_target:start(self.entity, self.state)

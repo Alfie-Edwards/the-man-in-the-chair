@@ -1,5 +1,6 @@
 require "behaviours.behaviour"
 require "behaviours.find_door"
+require "screens.win"
 
 GeorgeBehaviour = {
     find_door_behaviour = nil,
@@ -11,6 +12,7 @@ function GeorgeBehaviour.new()
     local obj = magic_new()
 
     obj.find_door_behaviour = FindDoor.new()
+
 
     return obj
 end
@@ -33,6 +35,9 @@ end
 
 function GeorgeBehaviour:update(dt)
     super().update(self, dt)
+    if self.entity.x and self.entity.x > 123 * 16 then
+        view:set_content(WinScreen.new())
+    end
     if self.sub_behaviour then
         if self.sub_behaviour:update(dt) then
             self:find_door()

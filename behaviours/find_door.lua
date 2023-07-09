@@ -78,7 +78,6 @@ end
 function FindDoor:update(dt)
     super().update(self, dt)
     if iter_size(self.unreachable_doors) == #self.all_doors then
-        self.state.escaping = true
         return true
     end
 

@@ -15,12 +15,7 @@ end
 
 function Turn:update(dt)
     super().update(self, dt)
-    local d = self.angle - self.entity.angle
-    d = d + (2 * math.pi)
-    d = d % (2 * math.pi)
-    if d > math.pi then
-        d = d - (math.pi * 2)
-    end
+    local d = normalize_angle(self.angle - self.entity.angle)
 
     local speed = self.entity.sweep_speed * dt
     if math.abs(d) < speed then
