@@ -56,7 +56,7 @@ function Sweep:update(dt)
     if self:can_see_george() then
         for _,ntt in ipairs(self.state.entities) do
             if type_string(ntt) == "Guard" then
-                ntt.behaviour:set_sub_behaviour(Investigate.new(self.entity.x + self.state.level.cell_length_pixels, self.entity.y + self.state.level.cell_length_pixels))
+                ntt.behaviour:set_sub_behaviour(Investigate.new(self.entity.x + self.state.level.cell_length_pixels, self.entity.y + self.state.level.cell_length_pixels, 3, 3, 2))
                 return false
             end
         end
