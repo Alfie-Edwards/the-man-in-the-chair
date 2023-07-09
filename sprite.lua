@@ -35,16 +35,20 @@ function sprite.directional(set, dir)
     return set.down
 end
 
-function sprite.sequence(set, duration, t)
+function sprite.sequence(set, duration, start_time)
     -- always return the final sprite after the duration is up
-    local progress = t / duration
+    local progress = start_time / duration
     local index = math.floor(progress * #set) + 1
     index = math.min(index, #set)
     return set[index]
 end
 
-function sprite.cycling(set, period, t)
-    local progress = (t % period) / period
+function sprite.cycling(set, period, start_time)
+    if start_time == nil then
+        start_time = love.timer.getTime()
+    end
+
+    local progress = (start_time % period) / period
     local index = math.floor(progress * #set) + 1
     return set[index]
 end

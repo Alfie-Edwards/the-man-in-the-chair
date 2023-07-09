@@ -3,13 +3,48 @@ require "behaviours.patrol"
 require "behaviours.investigate"
 require "direction"
 
+
 Guard = {
     SPEED = 25,
 
-    x = nil,
-    y = nil,
+    SPRITE_SETS = {
+        idle = sprite.make_set("Sprites/", {
+            left  = "GuardLeft1",
+            right = "GuardRight1",
+            up    = "GuardBack1",
+            down  = "GuardFront1",
+        }),
+        walk = sprite.make_set("Sprites/", {
+            left = {
+                "GuardLeft1",
+                "GuardLeft2",
+                "GuardLeft3",
+                "GuardLeft4",
+            },
+            right = {
+                "GuardRight1",
+                "GuardRight2",
+                "GuardRight3",
+                "GuardRight4",
+            },
+            up = {
+                "GuardBack1",
+                "GuardBack2",
+                "GuardBack3",
+                "GuardBack4",
+            },
+            down = {
+                "GuardFront1",
+                "GuardFront2",
+                "GuardFront3",
+                "GuardFront4",
+            },
+        }),
+    },
     vision = nil,
     speed = nil,
+
+    moved_last = nil,
 }
 setup_class(Guard, Movable)
 
@@ -25,6 +60,7 @@ function Guard.new(...)
     obj.behaviour = Investigate.new(128, 128, 32, 3, 2)
     obj.direction = Direction.DOWN
     obj.vision = HashSet.new()
+    obj.moved_last = false
 
     return obj
 end
@@ -35,6 +71,7 @@ end
 
 function Guard:update(dt, state)
     super().update(self, dt)
+
     self.vision = raycast(
         state.level,
         self.x,
@@ -47,6 +84,12 @@ end
 function Guard:draw(state)
     super().draw(self, state)
 
-    love.graphics.setColor({0, 0.5, 0.2, 1})
-    love.graphics.rectangle("fill", self.x - 8, self.y - 8, 16, 16)
+    love.graphics.setColor({1, 1, 1, 1})
+    local sprite = self:sprite()
+    if sprite ~= nil then
+        love.graphics.draw(sprite,
+                           self.x - sprite:getWidth() / 2,
+                           self.y - sprite:getHeight(),
+                           0, 1, 1)
+    end
 end

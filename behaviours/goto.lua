@@ -1,5 +1,7 @@
 require "behaviours.behaviour"
 require "behaviours.a-star"
+
+
 Goto = {
     x = nil,
     y = nil,
