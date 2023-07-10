@@ -283,6 +283,7 @@ function raycast(level, x, y, angle, fov, max_distance)
     y = y / level.cell_length_pixels
     max_distance = max_distance / level.cell_length_pixels
 
+    local start_cell = Cell.new(math.floor(x), math.floor(y))
     local angle_start = angle - fov / 2
     local angle_end = angle - fov / 2
     local arc_length = max_distance * fov
@@ -296,14 +297,17 @@ function raycast(level, x, y, angle, fov, max_distance)
         local dx = math.cos(ray_angle)
         local dy = math.sin(ray_angle)
         for distance = 0, max_distance, inc do
-            local cell_x = math.floor(x + dx * distance)
-            local cell_y = math.floor(y + dy * distance)
-            if level:cell_out_of_bounds(cell_x, cell_y) or level:cell_solid(cell_x, cell_y) then
-                break
+            local cell = Cell.new(math.floor(x + dx * distance), math.floor(y + dy * distance))
+            if (level:cell_out_of_bounds(cell.x, cell.y) or level:cell_solid(cell.x, cell.y)) then
+                if cell ~= start_cell then
+                    break
+                end
+            else
+                result:add(cell)
             end
-            result:add(Cell.new(cell_x, cell_y))
         end
     end
+
 
     return result
 end

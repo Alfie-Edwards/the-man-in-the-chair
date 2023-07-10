@@ -75,9 +75,7 @@ end
 
 function SecurityCamera:get_sprite()
     local set = nil
-    local ac = normalize_angle(direction_to_angle(self.direction)) + math.pi * 4
-    local a0 = (ac - math.pi / 2) % (math.pi * 2)
-    local a1 = (ac + math.pi / 2) % (math.pi * 2)
+    local ac = direction_to_angle(self.direction)
 
     if self.direction == Direction.RIGHT then
         set = SecurityCamera.SPRITE_SETS.right
@@ -89,15 +87,15 @@ function SecurityCamera:get_sprite()
         set = SecurityCamera.SPRITE_SETS.down
     end
 
-    local a = (normalize_angle(self.angle) + math.pi * 4) % (math.pi * 2)
-    local sector = (a - a0) / (a1 - a0) * 8
-    if sector <= 1 then
+    local a = normalize_angle(self.angle - ac)
+    local sector = a * 8 / math.pi
+    if sector <= -3 then
         return set.a
-    elseif sector <= 3 then
+    elseif sector <= -1 then
         return set.b
-    elseif sector >= 5 then
+    elseif sector >= 1 then
         return set.d
-    elseif sector >= 7 then
+    elseif sector >= 3 then
         return set.e
     else
         return set.c
@@ -115,10 +113,17 @@ function SecurityCamera:draw(state)
     end
     local sprite = self:get_sprite()
     love.graphics.setColor({1, 1, 1, 1})
+    local x_offset = 0
+    local y_offset = 0
+    if state.level:cell_solid(self.x, self.y) then
+        x_offset = direction_to_x(self.direction) * (10 / 16)
+        y_offset = direction_to_y(self.direction) * (10 / 16)
+    end
+
     if sprite ~= nil then
         love.graphics.draw(sprite,
-                           (self.x + 0.5) * cell_size - sprite:getWidth() / 2,
-                           (self.y + 0.5) * cell_size - sprite:getHeight(),
+                           (self.x + x_offset) * cell_size,
+                           (self.y + y_offset) * cell_size,
                            0, 1, 1)
     end
 end

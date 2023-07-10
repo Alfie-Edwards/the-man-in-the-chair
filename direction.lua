@@ -12,6 +12,30 @@ function direction_to_angle(direction)
     end
 end
 
+function direction_to_x(direction)
+    if direction == Direction.RIGHT then
+        return 1
+    elseif direction == Direction.UP then
+        return 0
+    elseif direction == Direction.LEFT then
+        return -1
+    else
+        return 0
+    end
+end
+
+function direction_to_y(direction)
+    if direction == Direction.RIGHT then
+        return 0
+    elseif direction == Direction.UP then
+        return -1
+    elseif direction == Direction.LEFT then
+        return  0
+    else
+        return 1
+    end
+end
+
 function direction_opposite(direction)
     if direction == Direction.RIGHT then
         return Direction.LEFT
