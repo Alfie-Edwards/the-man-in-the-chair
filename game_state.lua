@@ -68,7 +68,7 @@ function GameState.new()
             Guard.new(
             {
                 { x = 1904, y = 224 },
-                { x = 416,  y = 224 },
+                { x = 1840, y = 336 },
             }),
             Guard.new(
             {
