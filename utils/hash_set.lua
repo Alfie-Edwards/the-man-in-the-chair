@@ -25,6 +25,10 @@ function HashSet:remove(item)
     self[item] = false
 end
 
+function HashSet:__pairs()
+    return next, self, nil
+end
+
 function HashSet:__index(item)
     if item.__hash ~= nil then
         return self[item:__hash()] ~= false

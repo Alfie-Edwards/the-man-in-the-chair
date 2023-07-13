@@ -81,3 +81,11 @@ end
 function State:__newindex(name, value)
     self:set(name, value)
 end
+
+-- Iterate over properties.
+function State:__pairs()
+    return function(t, k)
+        k, _ = next(self.properties_set, k)
+        return k, self[k]
+    end, self, nil
+end

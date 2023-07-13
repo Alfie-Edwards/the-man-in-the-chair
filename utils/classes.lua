@@ -1,4 +1,5 @@
-classes = {}
+_classes = {}
+_method_owner_cache = {}
 
 function type_string(inst)
     -- Class instances and LOVE objects have their own type function.
@@ -27,7 +28,7 @@ end
 
 function is_type(inst, ...)
     for _, t in ipairs({...}) do
-        if not is_basic_type(t) then
+        if type(t) ~= "string" then
             -- Handle passing in a raw type.
             t = type_string(t)
         end
@@ -48,35 +49,18 @@ end
 
 function setup_class(class, super)
     -- Setup inheritance and the type/typeof methods from LOVE.
-    if (super == nil) then
-        super = Object
+    if (class ~= BaseObjectClass and super == nil) then
+        super = BaseObjectClass
     end
     local name = get_key(_G, class)
     setmetatable(class,
         {
+            __template = super, -- Custom field.
             __index = super,
             __name = name,
         }
     )
-
-    class.type = function(self)
-        return name
-    end
-    class.typeOf = function(self, type_name)
-        local c = class
-        while class ~= nil do
-            if class:type() == type_name then
-                return true
-            end
-            local mt = getmetatable(class)
-            if mt == nil then
-                return false
-            end
-            class = mt.__index
-        end
-        return false
-    end
-    classes[class] = true
+    _classes[class] = true
 end
 
 function magic_new(...)
@@ -112,18 +96,21 @@ function super(class)
     if mt == nil then
         return nil
     end
-    if type(mt.__index) == "function" then
-        return nil
-    end
-    return mt.__index
+    return mt.__template
 end
 
 function get_calling_class()
     -- Must be called from a class method, returns the class.
     local info = debug.getinfo(3, 'f')
-    for x, _ in pairs(classes) do
-        if get_key(x, info.func) ~= nil then
-            return x
+    if _method_owner_cache[info.func] ~= nil then
+        return _method_owner_cache[info.func]
+    end
+    for class, _ in next, _classes, nil do
+        for _, v in next, class, nil do
+            if v == info.func then
+                _method_owner_cache[info.func] = class
+                return class
+            end
         end
     end
     error("Calling method must be owned by a class which has had `setup_class` called.")
@@ -137,6 +124,9 @@ function generate_inheritance_metatable(class)
         return mt
     end
 
+    -- Custom value.
+    mt.__template = class
+
     -- Special case for __index.
     mt.__index = function(self, name)
         if class[name] == nil and class.__index ~= nil then
@@ -145,17 +135,90 @@ function generate_inheritance_metatable(class)
         return class[name]
     end
 
-    local seen = {}
-    local c = class
-    while c ~= nil do
-        for key, value in pairs(c) do
-            if not seen[key] and type(key) == "string" and #key >= 2 and string.sub(key, 1, 2) == "__" and key ~= "__index" then
-                mt[key] = value
-                seen[key] = true
-            end
+    for key, value in pairs(class) do
+        if type(key) == "string" and #key >= 2 and string.sub(key, 1, 2) == "__" and key ~= "__index" then
+            mt[key] = value
         end
-        c = super(c)
     end
 
     return mt
 end
+
+-- Override pairs to iterate over our class hierarchy.
+function pairs(target)
+    local mt = getmetatable(target)
+    if mt == nil or (mt.__pairs == nil and mt.__template == nil) then
+        return next, target, nil
+    end
+
+    if mt.__pairs ~= nil then
+        return mt.__pairs(target)
+    end
+
+    local seen = {}
+    return function(t, k)
+        local v = nil
+
+        while target do
+            repeat
+                -- Find next entry (new key) in target.
+                k, v = next(target, k)
+            until k == nil or not seen[k]
+
+            if k ~= nil then
+                -- If we found a key, return the pair.
+                seen[k] = true
+                return k, v
+            end
+
+            -- If we did not find a key we are done iterating this target, move onto the next.
+            local mt = getmetatable(target)
+            if mt == nil then
+                target = nil
+            else
+                target = mt.__template
+            end
+        end
+
+        -- No more targets, stop iteration.
+        return nil, nil
+    end, target, nil
+end
+
+BaseObjectClass = {}
+
+function BaseObjectClass:type()
+    local mt = getmetatable(self)
+    if mt ~= nil then
+        if mt.__name ~= nil then
+            -- Return name directly from mt if this is a class.
+            return mt.__name
+        end
+
+        if mt.__template ~= nil then
+            -- Return name from class' metatable.
+            mt = getmetatable(mt.__template)
+            if mt ~= nil and mt.__name ~= nil then
+                return mt.__name
+            end
+        end
+    end
+
+    error("Could not identify type.")
+end
+
+function BaseObjectClass:typeOf(type_name)
+    while self do
+        if self:type() == type_name then
+            return true
+        end
+        local mt = getmetatable(x)
+        if mt == nil then
+            return false
+        end
+        self = mt.__template
+    end
+    return false
+end
+
+setup_class(BaseObjectClass)

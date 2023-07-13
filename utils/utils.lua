@@ -1,7 +1,7 @@
 NEVER = -1
 
 function get_key(tab, value)
-    for k,v in pairs(tab) do
+    for k, v in pairs(tab) do
         if v == value then
             return k
         end
@@ -241,7 +241,11 @@ function hex2rgb(hex)
 end
 
 function t_since(tstamp)
-    return love.timer.getTime() - tstamp
+    return t_now() - tstamp
+end
+
+function t_now()
+    return love.timer.getTime()
 end
 
 function iter_size(x)
