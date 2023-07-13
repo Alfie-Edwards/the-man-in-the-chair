@@ -12,8 +12,6 @@ Level = {
 
     tile_resources = nil,
     solid_tile_types = nil,
-
-    camera = { x = 0, y = 0 },
     camera_pan_speed = 450,
 }
 setup_class(Level)
@@ -133,12 +131,7 @@ function Level:height_pixels()
 end
 
 function Level:draw()
-    love.graphics.push()
-    love.graphics.translate(-self.camera.x, -self.camera.y)
-
     self:draw_tiles()
-
-    love.graphics.pop()
 end
 
 function Level:draw_geom(opacity)
@@ -221,7 +214,7 @@ function Level:set_door_cell_solid(cell, door)
     else
         self.solid_door_cells:remove(cell)
     end
-    if door.lock_state == DoorLockState.UNLOCKED then
+    if not door.is_locked then
         self.locked_door_cells:remove(cell)
     else
         self.locked_door_cells:add(cell)

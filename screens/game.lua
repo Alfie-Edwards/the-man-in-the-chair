@@ -8,7 +8,7 @@ Game = {
 }
 setup_class(Game, SimpleElement)
 
-function Game.new(mode)
+function Game.new()
     local obj = magic_new()
 
     obj.state = GameState.new()
@@ -23,31 +23,26 @@ function Game.new(mode)
     local hacking_hud = Hacking.new(obj.state)
     obj:add_child(hacking_hud)
 
-    for _, entity in ipairs(obj.state.entities) do
-        if entity.behaviour then
-            entity.behaviour:start(entity, obj.state)
-        end
-    end
-
     return obj
 end
 
 function Game:update(dt)
     super().update(self, dt)
-    self.state.camera:update(dt, self.state)
     self.state.alarm.is_on = false
     for _, entity in ipairs(self.state.entities) do
-        entity:update(dt, self.state)
+        entity:update(dt)
     end
 end
 
 function Game:draw()
     super().draw(self)
 
-    local camera = self.state.camera
+    local camera = self.state:first("Camera")
 
     love.graphics.push()
-    love.graphics.translate(-camera.x, -camera.y)
+    if camera then
+        love.graphics.translate(-camera.x, -camera.y)
+    end
 
     self.state.level:draw()
 

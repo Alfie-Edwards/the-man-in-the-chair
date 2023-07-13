@@ -47,6 +47,7 @@ function love.load()
             view:set_content(MainMenu.new())
         end
     ))
+    -- view:set_content(Game.new())
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)

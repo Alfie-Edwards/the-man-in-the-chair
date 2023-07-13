@@ -62,15 +62,15 @@ function SecurityCamera.new(x, y, direction)
     return obj
 end
 
-function SecurityCamera:update(dt, state)
+function SecurityCamera:update(dt)
     super().update(self, dt)
     self.vision = raycast(
-        state.level,
-        self.x * state.level.cell_length_pixels,
-        self.y * state.level.cell_length_pixels,
+        self.state.level,
+        self.x * self.state.level.cell_length_pixels,
+        self.y * self.state.level.cell_length_pixels,
         self.angle,
         SecurityCamera.FOV,
-        SecurityCamera.VIEW_DISTANCE * state.level.cell_length_pixels)
+        SecurityCamera.VIEW_DISTANCE * self.state.level.cell_length_pixels)
 end
 
 function SecurityCamera:get_sprite()
@@ -103,10 +103,10 @@ function SecurityCamera:get_sprite()
 end
 
 
-function SecurityCamera:draw(state)
-    super().draw(self, state)
+function SecurityCamera:draw()
+    super().draw(self, self.state)
 
-    local cell_size = state.level.cell_length_pixels
+    local cell_size = self.state.level.cell_length_pixels
     for _, cell in pairs(self.vision) do
         love.graphics.setColor({1, 0, 0, 0.2})
         love.graphics.rectangle("fill", cell.x * cell_size, cell.y * cell_size, cell_size, cell_size)
@@ -115,7 +115,7 @@ function SecurityCamera:draw(state)
     love.graphics.setColor({1, 1, 1, 1})
     local x_offset = 0
     local y_offset = 0
-    if state.level:cell_solid(self.x, self.y) then
+    if self.state.level:cell_solid(self.x, self.y) then
         x_offset = direction_to_x(self.direction) * (10 / 16)
         y_offset = direction_to_y(self.direction) * (10 / 16)
     end

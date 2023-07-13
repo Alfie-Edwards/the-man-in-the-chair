@@ -43,8 +43,8 @@ function Jukebox:set_track(track)
     self.tracks[track]:setVolume(self.volume)
 end
 
-function Jukebox:update(dt, state)
-    if state.alarm.is_on then
+function Jukebox:update(dt)
+    if self.state.alarm.is_on then
         self:set_track("alarm")
     else
         self:set_track("default")

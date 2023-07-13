@@ -1,4 +1,4 @@
-require "utils.vector"
+require "entities.entity"
 
 Camera = {
     PAN_SPEED = 250,
@@ -6,9 +6,9 @@ Camera = {
     x = nil,
     y = nil,
 }
-setup_class(Camera)
+setup_class(Camera, Entity)
 
-function Camera.new(canvas, level)
+function Camera.new()
     local obj = magic_new()
 
     obj.x = 0
@@ -17,7 +17,7 @@ function Camera.new(canvas, level)
     return obj
 end
 
-function Camera:update(dt, state)
+function Camera:update(dt)
     local movement = Vector.new(0, 0, 0, 0)
 
     if love.keyboard.isDown("up", "w") then
@@ -39,6 +39,6 @@ function Camera:update(dt, state)
 
     movement:scale_to_length(Camera.PAN_SPEED * dt)
 
-    self.x = clamp(self.x + movement.x2, 0, state.level:width_pixels() - canvas:width())
-    self.y = clamp(self.y + movement.y2, 0, state.level:height_pixels() - canvas:height())
+    self.x = clamp(self.x + movement.x2, 0, self.state.level:width_pixels() - canvas:width())
+    self.y = clamp(self.y + movement.y2, 0, self.state.level:height_pixels() - canvas:height())
 end

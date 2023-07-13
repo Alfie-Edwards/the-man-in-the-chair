@@ -1,10 +1,10 @@
 require "alarm"
-require "jukebox"
 require "level"
-require "camera"
+require "entities.camera"
 require "entities.door"
 require "entities.george"
 require "entities.guard"
+require "entities.jukebox"
 require "entities.security_camera"
 
 GameState = {}
@@ -15,8 +15,8 @@ function GameState.new()
         escaping = false,
         alarm = Alarm.new(),
         level = Level.from_file("assets/level_data"),
-        camera = Camera.new(),
         entities = {
+            Camera.new(),
             Door.new( 11,   5, Direction.DOWN),
             Door.new( 19,  22, Direction.UP),
             Door.new( 24,  13, Direction.RIGHT),
@@ -80,5 +80,35 @@ function GameState.new()
         },
     })
 
+    for _, entity in ipairs(obj.entities) do
+        entity:init(obj)
+    end
+
     return obj
+end
+
+function GameState:first(type)
+    for _, e in ipairs(self.entities) do
+        if is_type(e, type) then
+            return e
+        end
+    end
+    return nil
+end
+
+function GameState:foreach(type, f)
+    for _, e in ipairs(self.entities) do
+        if is_type(e, type) then
+            f(e)
+        end
+    end
+end
+
+function GameState:any(type, f)
+    for _, e in ipairs(self.entities) do
+        if is_type(e, type) and f(e) then
+            return true
+        end
+    end
+    return false
 end

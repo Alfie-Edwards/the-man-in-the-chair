@@ -55,8 +55,8 @@ function Movable:sprite()
     return nil
 end
 
-function Movable:accessible_cells(state)
-    return state.level.cells - (state.level.solid_cells + state.level.solid_door_cells)
+function Movable:accessible_cells()
+    return self.state.level.cells - (self.state.level.solid_cells + self.state.level.solid_door_cells)
 end
 
 function Movable:play_footstep()
@@ -71,7 +71,7 @@ function Movable:play_footstep()
     self.t_last_footstep = love.timer.getTime()
 end
 
-function Movable:update(dt, state)
+function Movable:update(dt)
     local old_x, old_y = self.x, self.y
     super().update(self, dt)
     self.moved_last_tick = old_x ~= self.x or old_y ~= self.y

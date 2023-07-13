@@ -31,22 +31,16 @@ function FindDoor:start(entity, state)
     self.checked_doors = {}
     self.unreachable_doors = {}
     self.door_cells = HashSet.new()
-    for _, door in ipairs(state.entities) do
-        if is_type(door, "Door") then
+    state:foreach("Door",
+        function(door)
             self.door_cells = self.door_cells + door:active_cells()
             table.insert(self.all_doors, door)
         end
-    end
+    )
 
     self.target_door = self:next_door()
     if self.target_door ~= nil then
-        local cell = self:get_door_cell_to_progress(self.target_door, self.state)
-        self.goto_target = Goto.new(
-            (cell.x + 0.5) * self.state.level.cell_length_pixels,
-            (cell.y + 0.5) * self.state.level.cell_length_pixels,
-            1
-        )
-        self.goto_target:start(self.entity, self.state)
+        self:refresh_goto()
     end
 end
 
@@ -92,25 +86,29 @@ function FindDoor:update(dt)
     if self.target_door == nil then
         self.target_door = self:next_door()
         if self.target_door then
-            local cell = self:get_door_cell_to_progress(self.target_door, self.state)
-            self.goto_target = Goto.new(
-                (cell.x) * self.state.level.cell_length_pixels,
-                (cell.y) * self.state.level.cell_length_pixels,
-                1
-            )
-            self.goto_target:start(self.entity, self.state)
+            self:refresh_goto()
         end
     end
 
     return false
 end
 
-function FindDoor:get_door_cell_to_progress(door, state)
+function FindDoor:get_pos_to_progress(door, state)
     if self.state.escaping then
-        return door:cell_before(state)
+        return door:pos_outside(state)
     else
-        return door:cell_after(state)
+        return door:pos_inside(state)
     end
+end
+
+function FindDoor:refresh_goto(door, state)
+    local x, y = self:get_pos_to_progress(self.target_door, self.state)
+    self.goto_target = Goto.new(
+        x * self.state.level.cell_length_pixels,
+        y * self.state.level.cell_length_pixels,
+        1
+    )
+    self.goto_target:start(self.entity, self.state)
 end
 
 function FindDoor:query(door)

@@ -23,13 +23,7 @@ function Sweep:can_see_george()
         return
     end
 
-    local george = nil
-
-    for _,ntt in ipairs(self.state.entities) do
-        if type_string(ntt) == "George" then
-            george = ntt
-        end
-    end
+    local george = self.state:first("George")
 
     if george == nil then
         return
@@ -54,7 +48,7 @@ function Sweep:can_see_george()
         if closest_guard == nil then
             return
         end
-        if type_string(closest_guard.behaviour.sub_behaviour) == "Investigate" then
+        if type_string(closest_guard.behaviour.current_sub_behaviour) == "Investigate" then
             return
         end
         closest_guard.behaviour:set_sub_behaviour(Investigate.new(george.x, george.y, 3, 3, 2))

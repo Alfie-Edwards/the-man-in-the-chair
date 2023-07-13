@@ -33,9 +33,9 @@ function Hacking.new(state)
     obj.door_open_icon_offset_x = close_img:getWidth()
 
     -- icons over each door
-    for _,ntt in ipairs(obj.state.entities) do
-        if is_type(ntt, Door) then
-            local button_positions = obj:door_button_positions(ntt)
+    state:foreach("Door",
+        function(door)
+            local button_positions = obj:door_button_positions(door)
 
             -- 'close' icon
             local close_door_button = ImageButton.new()
@@ -47,12 +47,12 @@ function Hacking.new(state)
                 x = button_positions.close.x,
                 y = button_positions.close.y,
                 click = function()
-                    if ntt:is_locked() and
-                       ntt.state == DoorState.CLOSED and
-                       not ntt:is_transitioning() then
-                        obj:unlock_door(ntt)
+                    if door.is_locked and
+                       not door.is_open and
+                       not door:is_transitioning() then
+                        obj:unlock_door(door)
                     else
-                        obj:lock_door_closed(ntt)
+                        obj:lock_door_closed(door)
                     end
                 end,
             })
@@ -68,23 +68,23 @@ function Hacking.new(state)
                 x = button_positions.open.x,
                 y = button_positions.open.y,
                 click = function()
-                    if ntt:is_locked() and
-                       ntt.state == DoorState.OPEN and
-                       not ntt:is_transitioning() then
-                        obj:unlock_door(ntt)
+                    if door.is_locked and
+                       door.is_open and
+                       not door:is_transitioning() then
+                        obj:unlock_door(door)
                     else
-                        obj:lock_door_open(ntt)
+                        obj:lock_door_open(door)
                     end
                 end,
             })
             obj:add_child(open_door_button)
 
-            obj.door_button_map[ntt] = {
+            obj.door_button_map[door] = {
                 open = open_door_button,
                 close = close_door_button,
             }
         end
-    end
+    )
 
     -- points background banner
     local points_bg = Image.new()
@@ -164,13 +164,13 @@ function Hacking:lock_door_open(door)
         return
     end
 
-    if door:is_locked() and door.state == DoorState.CLOSED then
+    if door.is_locked and not door.is_open then
         door:lock_open()
         return
     end
 
     if self:use_point() then
-        if door:lock_open() ~= DoorState.OPEN then
+        if not door:lock_open() then
             self:restore_point()
         end
     end
@@ -181,13 +181,13 @@ function Hacking:lock_door_closed(door)
         return
     end
 
-    if door:is_locked() and door.state == DoorState.OPEN then
+    if door.is_locked and door.is_open then
         door:lock_closed()
         return
     end
 
     if self:use_point() then
-        if door:lock_closed() ~= DoorState.CLOSED then
+        if door:lock_closed() then
             self:restore_point()
         end
     end
@@ -200,15 +200,20 @@ end
 
 function Hacking:door_button_positions(door)
     local pos = door:pixel_pos(self.state)
+    local camera = self.state:first("Camera")
+    if camera then
+        pos.x = pos.x - camera.x
+        pos.y = pos.y - camera.y
+    end
 
     return {
         close = {
-            x = pos.x - self.state.camera.x,
-            y = pos.y - self.state.camera.y,
+            x = pos.x,
+            y = pos.y,
         },
         open = {
-            x = (pos.x + self.door_open_icon_offset_x) - self.state.camera.x,
-            y = pos.y - self.state.camera.y,
+            x = pos.x + self.door_open_icon_offset_x,
+            y = pos.y,
         },
     }
 end
@@ -232,9 +237,9 @@ end
 function Hacking:draw()
     for door, buttons in pairs(self.door_button_map) do
         -- draw highlights against 'active' buttons
-        if door:is_locked() then
+        if door.is_locked then
             love.graphics.setColor({1, 1, 0, 1})
-            if door.state == DoorState.OPEN then
+            if door.is_open then
                 local icon_width = buttons.open.image:getWidth()
                 local hl_rad = (icon_width + 5) / 2
                 love.graphics.circle(
@@ -242,7 +247,7 @@ function Hacking:draw()
                     buttons.open.x + 0.75 * hl_rad,
                     (buttons.open.y - icon_width) + 0.75 * hl_rad,
                     hl_rad)
-            elseif door.state == DoorState.CLOSED then
+            else
                 local icon_width = buttons.close.image:getWidth()
                 local hl_rad = (icon_width + 5) / 2
                 love.graphics.circle(

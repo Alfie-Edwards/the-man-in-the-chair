@@ -60,8 +60,8 @@ function George.new()
     return obj
 end
 
-function George:draw(state)
-    super().draw(self, state)
+function George:draw()
+    super().draw(self, self.state)
 
     love.graphics.setColor({1, 1, 1, 1})
     local sprite = self:sprite()

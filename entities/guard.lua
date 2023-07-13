@@ -62,24 +62,24 @@ function Guard.new(patrol_points)
     return obj
 end
 
-function Guard:accessible_cells(state)
-    return state.level.cells - (state.level.solid_cells + state.level.locked_door_cells)
+function Guard:accessible_cells()
+    return self.state.level.cells - (self.state.level.solid_cells + self.state.level.locked_door_cells)
 end
 
-function Guard:update(dt, state)
+function Guard:update(dt)
     super().update(self, dt)
 
     self.vision = raycast(
-        state.level,
+        self.state.level,
         self.x,
         self.y,
         direction_to_angle(self.direction),
         SecurityCamera.FOV,
-        SecurityCamera.VIEW_DISTANCE * state.level.cell_length_pixels)
+        SecurityCamera.VIEW_DISTANCE * self.state.level.cell_length_pixels)
 end
 
-function Guard:draw(state)
-    super().draw(self, state)
+function Guard:draw()
+    super().draw(self, self.state)
 
     love.graphics.setColor({1, 1, 1, 1})
     local sprite = self:sprite()

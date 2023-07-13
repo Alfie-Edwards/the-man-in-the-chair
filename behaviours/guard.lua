@@ -1,16 +1,13 @@
 require "behaviours.behaviour"
 require "behaviours.patrol"
-require "behaviours.goto"
+require "behaviours.goto_target"
 require "entities.george"
 require "screens.lose"
 
 GuardBehaviour = {
     patrol_behaviour = nil,
-
+    chase_behaviour = nil,
     current_sub_behaviour = nil,
-
-    george = nil,
-
     t_last = nil,
 }
 setup_class(GuardBehaviour, Behaviour)
@@ -27,6 +24,12 @@ end
 
 function GuardBehaviour:start(entity, state)
     super().start(self, entity, state)
+
+    local george = self.state:first("George")
+    if george then
+        self.chase_behaviour = GotoTarget.new(george)
+    end
+
     self:patrol()
 end
 
@@ -38,16 +41,8 @@ function GuardBehaviour:set_sub_behaviour(behaviour)
 end
 
 function GuardBehaviour:investigate(x, y)
-    -- if self:not_pursuing() then
-    --     self:set_sub_behaviour(Goto.new(x, y))
-    --     return
-    -- end
-
     if t_since(self.t_last) > 3 then
-        self:set_sub_behaviour(Goto.new(x, y))
-        -- self.current_sub_behaviour.x = x
-        -- self.current_sub_behaviour.y = y
-        -- self.current_sub_behaviour:start(self.entity, self.state)
+        self:set_sub_behaviour(Investigate.new(x, y, 3, 3, 2))
 
         self.t_last = love.timer.getTime()
     end
@@ -57,22 +52,10 @@ function GuardBehaviour:patrol()
     self:set_sub_behaviour(self.patrol_behaviour)
 end
 
-function GuardBehaviour:get_george_entity()
-    if self.george ~= nil then
-        return self.george
+function GuardBehaviour:chase()
+    if self.chase_behaviour and self.current_sub_behaviour ~= self.chase_behaviour then
+        self:set_sub_behaviour(self.chase_behaviour)
     end
-
-    local george = nil
-
-    for _,ntt in ipairs(self.state.entities) do
-        if type_string(ntt) == "George" then
-            self.george = ntt
-            return ntt
-        end
-    end
-
-    print("WARNING: couldn't find george!")
-    return nil
 end
 
 function GuardBehaviour:can_see_george()
@@ -80,7 +63,7 @@ function GuardBehaviour:can_see_george()
         return false
     end
 
-    local george = self:get_george_entity()
+    local george = self.state:first("George")
 
     if george == nil then
         return false
@@ -102,7 +85,7 @@ function GuardBehaviour:not_pursuing()
 end
 
 function GuardBehaviour:hit_george()
-    local george = self:get_george_entity()
+    local george = self.state:first("George")
 
     if george == nil then
         return false
@@ -124,18 +107,12 @@ function GuardBehaviour:update(dt)
     end
 
     if self:hit_george() then
-        for _, e in ipairs(self.state.entities) do
-            if type_string(e) == "Jukebox" then
-                e:silence()
-            end
-        end
+        self.state:foreach("Jukebox", function(e) e:silence() end)
         view:set_content(LoseScreen.new())
     end
 
-    -- if self:not_pursuing() and self:can_see_george() then
     if self:can_see_george() then
-        local george = self:get_george_entity()
-        self:investigate(george.x, george.y)
+        self:chase()
     end
 
     return false

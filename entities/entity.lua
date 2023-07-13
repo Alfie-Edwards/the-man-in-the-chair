@@ -1,5 +1,6 @@
 Entity = {
     behaviour = nil,
+    state = nil,
 }
 setup_class(Entity)
 
@@ -9,7 +10,15 @@ function Entity.new(x, y)
     return obj
 end
 
-function Entity:update(dt, state)
+function Entity:init(state)
+    self.state = state
+    if self.behaviour then
+        self.behaviour:start(self, state)
+    end
+end
+
+
+function Entity:update(dt)
     if self.behaviour ~= nil then
         if self.behaviour:update(dt) then
             self.behaviour = nil
@@ -17,7 +26,7 @@ function Entity:update(dt, state)
     end
 end
 
-function Entity:draw(state)
+function Entity:draw()
     if self.behaviour ~= nil then
         self.behaviour:draw()
     end
