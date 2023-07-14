@@ -133,9 +133,7 @@ function SecurityCamera:draw()
                            0, 1, 1)
     end
 
-    if self.emote then
-        self.emote:draw(
-            (self.x + x_offset + 0.5) * cell_size,
-            (self.y + y_offset - 0.5) * cell_size)
+    if self.emote ~= nil then
+        self.emote:draw(cx, cy - cell_size)
     end
 end

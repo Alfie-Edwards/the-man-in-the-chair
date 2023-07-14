@@ -1,6 +1,7 @@
 require "behaviours.behaviour"
 require "behaviours.sweep"
 require "behaviours.turn_to_target"
+require "emotes"
 
 SecurityCameraBehaviour = {
     SWEEP_ANGLE = math.pi / 2,
@@ -41,13 +42,14 @@ function SecurityCameraBehaviour:start(entity, state)
 end
 
 function SecurityCameraBehaviour:sweep()
+    self.entity.emote = nil
     self:set_sub_behaviour(self.sweep_behaviour)
 end
 
 function SecurityCameraBehaviour:watch()
+    self.entity.emote = ExclaimationEmote.new()
     self:set_sub_behaviour(self.watch_behaviour)
 end
-
 
 function SecurityCameraBehaviour:can_see_george()
     if self.entity.vision == nil then
@@ -64,7 +66,6 @@ function SecurityCameraBehaviour:can_see_george()
 
     return self.entity.vision:contains(george_cell)
 end
-
 
 function SecurityCameraBehaviour:update(dt)
     super().update(self, dt)
@@ -88,7 +89,9 @@ function SecurityCameraBehaviour:update(dt)
                 end
             end
         )
-        if closest_guard ~= nil and not closest_guard.behaviour:doing("Investigate") then
+        if closest_guard ~= nil and
+                not closest_guard.behaviour:doing("Investigate") and
+                not closest_guard.behaviour:doing("GotoTarget") then
             closest_guard.behaviour:investigate(george.x, george.y)
         end
     elseif self:doing("TurnToTarget") then

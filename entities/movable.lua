@@ -19,6 +19,8 @@ Movable = {
     t_last_footstep = nil,
 
     moved_last_tick = nil,
+
+    emote = nil,
 }
 setup_class(Movable, Entity)
 
@@ -78,5 +80,14 @@ function Movable:update(dt)
 
     if t_since(self.t_last_footstep) >= self.footstep_period then
         self:play_footstep()
+    end
+end
+
+function Movable:draw()
+    super().draw(self)
+
+    local cell_size = self.state.level.cell_length_pixels
+    if self.emote ~= nil then
+        self.emote:draw(self.x, self.y - cell_size * 2.5)
     end
 end

@@ -37,7 +37,7 @@ end
 
 function sprite.sequence(set, duration, start_time)
     -- always return the final sprite after the duration is up
-    local progress = start_time / duration
+    local progress = (t_now() - start_time) / duration
     local index = math.floor(progress * #set) + 1
     index = math.min(index, #set)
     return set[index]
@@ -52,4 +52,5 @@ function sprite.cycling(set, period, start_time)
     local index = math.floor(progress * #set) + 1
     return set[index]
 end
+
 

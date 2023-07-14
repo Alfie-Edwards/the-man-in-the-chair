@@ -2,6 +2,7 @@ require "behaviours.behaviour"
 require "behaviours.default_behaviour"
 require "behaviours.patrol"
 require "behaviours.goto_target"
+require "emotes"
 require "entities.george"
 require "screens.lose"
 
@@ -29,15 +30,22 @@ function GuardBehaviour:start(entity, state)
 end
 
 function GuardBehaviour:investigate(x, y)
+    if not is_type(self.entity.emote, QuestionEmote) then
+        self.entity.emote = QuestionEmote.new()
+    end
     self:set_sub_behaviour(Investigate.new(x, y, 3, 3, 2))
 end
 
 function GuardBehaviour:patrol()
+    self.entity.emote = nil
     self:set_sub_behaviour(self.patrol_behaviour)
 end
 
 function GuardBehaviour:chase()
     if self.chase_behaviour and self.sub_behaviour ~= self.chase_behaviour then
+        if not is_type(self.entity.emote, ExclaimationEmote) then
+            self.entity.emote = ExclaimationEmote.new()
+        end
         self:set_sub_behaviour(self.chase_behaviour)
     end
 end

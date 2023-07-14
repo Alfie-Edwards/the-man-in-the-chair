@@ -79,7 +79,7 @@ function Guard:update(dt)
 end
 
 function Guard:draw()
-    super().draw(self, self.state)
+    super().draw(self)
 
     love.graphics.setColor({1, 1, 1, 1})
     local sprite = self:sprite()

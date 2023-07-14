@@ -1,4 +1,5 @@
 require "behaviours.behaviour"
+require "emotes"
 require "entities.door"
 
 FindDoor = {
@@ -66,6 +67,10 @@ function FindDoor:next_door()
     elseif result == DoorQueryResult.IN_FRONT then 
         return door
     end
+
+    if self.entity.emote == nil then
+        self.entity.emote = QuestionEmote.new()
+    end
     return nil
 end
 
@@ -86,6 +91,7 @@ function FindDoor:update(dt)
     if self.target_door == nil then
         self.target_door = self:next_door()
         if self.target_door then
+            self.entity.emote = nil
             self:refresh_goto()
         end
     end
