@@ -1,4 +1,3 @@
-
 AssetCache = {
     images = nil,
     image_data = nil,

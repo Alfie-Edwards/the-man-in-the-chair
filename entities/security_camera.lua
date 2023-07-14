@@ -1,11 +1,9 @@
 require "entities.entity"
-require "behaviours.sweep"
+require "behaviours.security_camera"
 
 SecurityCamera = {
-    SWEEP_SPEED = 0.5,
     FOV = math.pi / 2,
     VIEW_DISTANCE = 10,
-    WAIT_TIME = 5,
 
     SPRITE_SETS = {
         down = sprite.make_set("Sprites/", {
@@ -45,6 +43,7 @@ SecurityCamera = {
     sweep_speed = nil,
     direction = nil,
     vision = nil,
+    emote = nil,
 }
 setup_class(SecurityCamera, Entity)
 
@@ -57,7 +56,7 @@ function SecurityCamera.new(x, y, direction)
     obj.angle = direction_to_angle(direction)
     obj.direction = direction
     obj.vision = HashSet.new()
-    obj.behaviour = Sweep.new(obj.angle, math.pi / 2, SecurityCamera.WAIT_TIME)
+    obj.behaviour = SecurityCameraBehaviour.new(obj.angle)
 
     return obj
 end
@@ -102,6 +101,17 @@ function SecurityCamera:get_sprite()
     end
 end
 
+function SecurityCamera:centre()
+    local x_offset = 0.5
+    local y_offset = 0.5
+    if self.state.level:cell_solid(self.x, self.y) then
+        x_offset = direction_to_x(self.direction) * (10 / 16)
+        y_offset = direction_to_y(self.direction) * (10 / 16)
+    end
+    return (self.x + x_offset) * self.state.level.cell_length_pixels,
+           (self.y + y_offset) * self.state.level.cell_length_pixels
+end
+
 
 function SecurityCamera:draw()
     super().draw(self, self.state)
@@ -113,17 +123,19 @@ function SecurityCamera:draw()
     end
     local sprite = self:get_sprite()
     love.graphics.setColor({1, 1, 1, 1})
-    local x_offset = 0
-    local y_offset = 0
-    if self.state.level:cell_solid(self.x, self.y) then
-        x_offset = direction_to_x(self.direction) * (10 / 16)
-        y_offset = direction_to_y(self.direction) * (10 / 16)
-    end
+    
+    local cx, cy = self:centre()
 
     if sprite ~= nil then
         love.graphics.draw(sprite,
-                           (self.x + x_offset) * cell_size,
-                           (self.y + y_offset) * cell_size,
+                           cx - sprite:getWidth() / 2,
+                           cy - sprite:getHeight() / 2,
                            0, 1, 1)
+    end
+
+    if self.emote then
+        self.emote:draw(
+            (self.x + x_offset + 0.5) * cell_size,
+            (self.y + y_offset - 0.5) * cell_size)
     end
 end

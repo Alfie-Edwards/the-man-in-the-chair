@@ -1,4 +1,5 @@
 require "behaviours.behaviour"
+require "behaviours.default_behaviour"
 require "behaviours.patrol"
 require "behaviours.goto_target"
 require "entities.george"
@@ -7,17 +8,13 @@ require "screens.lose"
 GuardBehaviour = {
     patrol_behaviour = nil,
     chase_behaviour = nil,
-    current_sub_behaviour = nil,
-    t_last = nil,
 }
-setup_class(GuardBehaviour, Behaviour)
+setup_class(GuardBehaviour, DefaultBehaviour)
 
 function GuardBehaviour.new(patrol_points)
-    local obj = magic_new()
+    local obj = magic_new(GuardBehaviour.patrol)
 
     obj.patrol_behaviour = Patrol.new(patrol_points)
-
-    obj.t_last = love.timer.getTime()
 
     return obj
 end
@@ -29,23 +26,10 @@ function GuardBehaviour:start(entity, state)
     if george then
         self.chase_behaviour = GotoTarget.new(george)
     end
-
-    self:patrol()
-end
-
-function GuardBehaviour:set_sub_behaviour(behaviour)
-    self.current_sub_behaviour = behaviour
-    if self.current_sub_behaviour then
-        self.current_sub_behaviour:start(self.entity, self.state)
-    end
 end
 
 function GuardBehaviour:investigate(x, y)
-    if t_since(self.t_last) > 3 then
-        self:set_sub_behaviour(Investigate.new(x, y, 3, 3, 2))
-
-        self.t_last = love.timer.getTime()
-    end
+    self:set_sub_behaviour(Investigate.new(x, y, 3, 3, 2))
 end
 
 function GuardBehaviour:patrol()
@@ -53,7 +37,7 @@ function GuardBehaviour:patrol()
 end
 
 function GuardBehaviour:chase()
-    if self.chase_behaviour and self.current_sub_behaviour ~= self.chase_behaviour then
+    if self.chase_behaviour and self.sub_behaviour ~= self.chase_behaviour then
         self:set_sub_behaviour(self.chase_behaviour)
     end
 end
@@ -74,16 +58,6 @@ function GuardBehaviour:can_see_george()
     return self.entity.vision:contains(george_cell)
 end
 
-function GuardBehaviour:not_pursuing()
-    local have_behaviour = self.current_sub_behaviour ~= nil
-    if not have_behaviour then
-        return true
-    end
-
-    local behaviour_type = type_string(self.current_sub_behaviour)
-    return behaviour_type ~= "Goto"
-end
-
 function GuardBehaviour:hit_george()
     local george = self.state:first("George")
 
@@ -100,11 +74,6 @@ end
 
 function GuardBehaviour:update(dt)
     super().update(self, dt)
-    if self.current_sub_behaviour then
-        if self.current_sub_behaviour:update(dt) then
-            self:patrol()
-        end
-    end
 
     if self:hit_george() then
         self.state:foreach("Jukebox", function(e) e:silence() end)
@@ -120,9 +89,6 @@ end
 
 function GuardBehaviour:draw()
     super().draw(self)
-    if self.current_sub_behaviour then
-        self.current_sub_behaviour:draw()
-    end
 
     if self.entity.vision ~= nil then
         local cell_size = self.state.level.cell_length_pixels
