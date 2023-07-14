@@ -273,6 +273,7 @@ require "utils.bounding_box"
 require "utils.vector"
 require "utils.event"
 require "utils.state"
+require "utils.hash_map"
 require "utils.hash_set"
 require "utils.a-star"
 

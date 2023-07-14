@@ -117,7 +117,7 @@ function SecurityCamera:draw()
     super().draw(self, self.state)
 
     local cell_size = self.state.level.cell_length_pixels
-    for _, cell in pairs(self.vision) do
+    for cell, _ in pairs(self.vision) do
         love.graphics.setColor({1, 0, 0, 0.2})
         love.graphics.rectangle("fill", cell.x * cell_size, cell.y * cell_size, cell_size, cell_size)
     end

@@ -100,7 +100,7 @@ function GuardBehaviour:draw()
 
     if self.entity.vision ~= nil then
         local cell_size = self.state.level.cell_length_pixels
-        for _, cell in pairs(self.entity.vision) do
+        for cell, _ in pairs(self.entity.vision) do
             love.graphics.setColor({1, 0, 0, 0.1})
             love.graphics.rectangle("fill", cell.x * cell_size, cell.y * cell_size, cell_size, cell_size)
         end

@@ -264,6 +264,10 @@ function Cell:__eq(other)
     return self:__hash() == other:__hash()
 end
 
+function Cell:__tostring()
+    return "Cell("..tostring(self.x)..", "..tostring(self.y)..")"
+end
+
 function Cell:__hash()
     return tostring(self.x)..","..tostring(self.y)
 end

@@ -116,7 +116,7 @@ end
 
 function Element:set_properties(properties)
     -- Helper for setting multiple properties at once
-    for name,value in pairs(properties) do
+    for name, value in pairs(properties) do
         local setter = self["set_"..name]
         if setter == nil then
             error("Element of type "..type_string(self).." does not have a setter for the property '"..name.."'.")

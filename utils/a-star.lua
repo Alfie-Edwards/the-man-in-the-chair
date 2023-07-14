@@ -36,27 +36,26 @@ local cachedPaths = nil
 -- local functions
 ----------------------------------------------------------------
 
-function dist ( x1, y1, x2, y2 )
+function manhattan_dist ( x1, y1, x2, y2 )
 	
-	-- return math.pow ( x2 - x1, 2 ) + math.pow ( y2 - y1, 2 )
 	return math.abs(x2 - x1) + math.abs(y2 - y1)
 end
 
 function dist_between ( nodeA, nodeB )
 
-	return dist ( nodeA.x, nodeA.y, nodeB.x, nodeB.y )
+	return manhattan_dist ( nodeA.x, nodeA.y, nodeB.x, nodeB.y )
 end
 
 function heuristic_cost_estimate ( nodeA, nodeB )
 
-	return dist ( nodeA.x, nodeA.y, nodeB.x, nodeB.y )
+	return manhattan_dist ( nodeA.x, nodeA.y, nodeB.x, nodeB.y )
 end
 
 function lowest_f_score ( set, f_score )
 
 	local lowest, bestNode = INF, nil
-	for _, node in ipairs ( set ) do
-		local score = f_score [ node:__hash() ]
+	for node, _ in pairs(set) do
+		local score = f_score[node]
 		if score < lowest then
 			lowest, bestNode = score, node
 		end
@@ -89,30 +88,11 @@ function neighbor_nodes ( theNode, nodes, goal )
 	return neighbors
 end
 
-function not_in ( set, theNode )
-
-	for _, node in ipairs ( set ) do
-		if node == theNode then return false end
-	end
-	return true
-end
-
-function remove_node ( set, theNode )
-
-	for i, node in ipairs ( set ) do
-		if node == theNode then 
-			set [ i ] = set [ #set ]
-			set [ #set ] = nil
-			break
-		end
-	end	
-end
-
 function unwind_path ( flat_path, map, current_node )
 
-	if map [ current_node:__hash() ] then
-		table.insert ( flat_path, 1, map [ current_node:__hash() ] ) 
-		return unwind_path ( flat_path, map, map [ current_node:__hash() ] )
+	if map [ current_node ] then
+		table.insert ( flat_path, 1, map [ current_node ] ) 
+		return unwind_path ( flat_path, map, map [ current_node ] )
 	else
 		return flat_path
 	end
@@ -123,18 +103,18 @@ end
 ----------------------------------------------------------------
 
 function a_star ( start, goal, nodes )
-	local closedset = {}
-	local openset = { start }
-	local came_from = {}
+	local closedset = HashSet.new()
+	local openset = HashSet.new(start)
+	local came_from = HashMap.new()
 
 	local MAX_IT = 100
 	local it = 1
 
-	local g_score, f_score = {}, {}
-	g_score [ start:__hash() ] = 0
-	f_score [ start:__hash() ] = g_score [ start:__hash() ] + heuristic_cost_estimate ( start, goal )
+	local g_score, f_score = HashMap.new(), HashMap.new()
+	g_score [ start ] = 0
+	f_score [ start ] = g_score [ start ] + heuristic_cost_estimate ( start, goal )
 
-	while #openset > 0 and it < MAX_IT do
+	while iter_size(openset) > 0 and it < MAX_IT do
 		local current = lowest_f_score ( openset, f_score )
 		if current == goal then
 			local path = unwind_path ( {}, came_from, goal )
@@ -142,21 +122,21 @@ function a_star ( start, goal, nodes )
 			return path
 		end
 
-		remove_node ( openset, current )		
-		table.insert ( closedset, current )
+		openset:remove(current)		
+		closedset:add(current)
 		
 		local neighbors = neighbor_nodes ( current, nodes, goal )
-		for _, neighbor in ipairs ( neighbors ) do 
-			if not_in ( closedset, neighbor ) then
+		for _, neighbor in ipairs (neighbors) do
+			if not closedset[neighbor] then
 			
-				local tentative_g_score = g_score [ current:__hash() ] + dist_between ( current, neighbor )
+				local tentative_g_score = g_score [ current ] + dist_between ( current, neighbor )
 				 
-				if not_in ( openset, neighbor ) or tentative_g_score < g_score [ neighbor:__hash() ] then 
-					came_from 	[ neighbor:__hash() ] = current
-					g_score 	[ neighbor:__hash() ] = tentative_g_score
-					f_score 	[ neighbor:__hash() ] = g_score [ neighbor:__hash() ] + heuristic_cost_estimate ( neighbor, goal )
-					if not_in ( openset, neighbor ) then
-						table.insert ( openset, neighbor )
+				if not openset[neighbor] or tentative_g_score < g_score [ neighbor ] then 
+					came_from 	[ neighbor ] = current
+					g_score 	[ neighbor ] = tentative_g_score
+					f_score 	[ neighbor ] = g_score [ neighbor ] + heuristic_cost_estimate ( neighbor, goal )
+					if not openset[neighbor] then
+						openset:add(neighbor)
 					end
 				end
 			end
