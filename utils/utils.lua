@@ -64,7 +64,7 @@ function concat(a, b)
 end
 
 function index_of(list, value)
-    for i,v in ipairs(list) do
+    for i, v in ipairs(list) do
         if v == value then
             return i
         end
@@ -73,7 +73,7 @@ function index_of(list, value)
 end
 
 function value_in(value, list)
-    for _,item in ipairs(list) do
+    for _, item in ipairs(list) do
         if value == item then
             return true
         end
@@ -276,4 +276,5 @@ require "utils.state"
 require "utils.hash_map"
 require "utils.hash_set"
 require "utils.a-star"
+require "utils.data_file"
 

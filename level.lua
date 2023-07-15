@@ -1,7 +1,3 @@
-require "utils.vector"
-require "data_file"
-
-
 Level = {
     geom = nil,
     cell_length_pixels = 16,
@@ -17,39 +13,25 @@ Level = {
 setup_class(Level)
 
 function Level.from_file(filename)
-    local geom_img_file = nil
+    local geom_img_file = "Map9"
     local tile_resources = {}
     local solid_tile_types = {}
 
-    local schema = DataFile.new({
-        ["geometry"] = function(line)
-            geom_img_file = line
-        end,
-        ["tile mapping"] = function(line)
-            local name, col_hex = string.match(line, "(.*): (.*)")
+    local datafile = DataFile.load(filename)
 
-            tile_resources[name] = {
-                colour_code = hex2rgb(col_hex),
-                image = assets:get_image(name),
-            }
-        end,
-        ["solid tiles"] = function(line)
-            local found = false
-            for tile_type,_ in pairs(tile_resources) do
-                if tile_type == line then
-                    found = true
-                    break
-                end
-            end
-            if not found then
-                error("tried to make unknown tile type "..line.." a solid tile type")
-            end
+    for col_hex, name in pairs(datafile.tile_mapping) do
+        tile_resources[name] = {
+            colour_code = hex2rgb(col_hex),
+            image = assets:get_image(name),
+        }
+    end
+    solid_tile_types = datafile.solid_tiles
 
-            table.insert(solid_tile_types, line)
-        end,
-    })
-
-    schema:load(filename)
+    for _, tile_type in ipairs(solid_tile_types) do
+        if tile_resources[tile_type] == nil then
+            error("Unknown tile type listed as solid: \""..tile_type.."\".")
+        end
+    end
 
     return Level.new(geom_img_file, tile_resources, solid_tile_types)
 end
