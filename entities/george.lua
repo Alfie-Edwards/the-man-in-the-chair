@@ -4,8 +4,6 @@ require "direction"
 
 George = {
     SPEED = 60,
-    SPAWN_X = 68,
-    SPAWN_Y = 250,
 
     SPRITE_SETS = {
         idle = sprite.make_set("Sprites/", {
@@ -48,16 +46,20 @@ George = {
 }
 setup_class(George, Movable)
 
-function George.new()
+function George.new(x, y)
     local obj = magic_new()
 
-    obj.x = George.SPAWN_X
-    obj.y = George.SPAWN_Y
+    obj.x = x
+    obj.y = y
     obj.speed = George.SPEED
     obj.behaviour = GeorgeBehaviour.new()
     obj.direction = Direction.DOWN
 
     return obj
+end
+
+function George.from_config(config)
+    return George.new(config.x, config.y)
 end
 
 function George:draw()

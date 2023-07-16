@@ -1,5 +1,5 @@
 DataFile = {
-    TOKENS = {
+    TOKEN_TYPES = {
         boolean1 = "^(true)",
         boolean2 = "^(false)",
         string1 = "^(\"[^\"]*\")",
@@ -11,155 +11,247 @@ DataFile = {
         table_separator = "^(:)",
         whitespace = "^(%s+)"
     },
+    INDENT="   ",
 }
 
-function DataFile.load(filename)
-    local contents, _ = love.filesystem.read(filename)
+function DataFile.save(filename, data)
+    local data_string = DataFile.serialize(data)
+    love.filesystem.write(filename, data_string)
+end
 
-    if not contents then
+function DataFile.serialize(data)
+    return DataFile.serialize_table(data)
+end
+
+function DataFile.serialize_table(t, indent_level)
+    indent_level = indent_level or 0
+    local indent_string = string.rep(DataFile.INDENT, indent_level + 1)
+    local result = "{\n"
+
+    for key, value in pairs(t) do
+        -- Add indent.
+        result = result..indent_string
+
+        -- Add key.
+        if type(key) == "table" then
+            result = result..DataFile.serialize_table(key, indent_level + 1)
+        elseif DataFile.is_primitive(key) then
+            result = result..DataFile.serialize_primitive(key)
+        else
+            error("Unexpected type for key \""..type(key).."\".")
+        end
+
+        -- Add : .
+        result = result..": "
+
+        -- Add value.
+        if type(value) == "table" then
+            result = result..DataFile.serialize_table(value, indent_level + 1)
+        elseif DataFile.is_primitive(value) then
+            result = result..DataFile.serialize_primitive(value)
+        else
+            error("Unexpected type for value \""..type(key).."\".")
+        end
+
+        -- Add , .
+        result = result..",\n"
+    end
+
+    result = result..string.rep(DataFile.INDENT, indent_level).."}"
+    return result
+end
+
+function DataFile.is_primitive(p)
+    return type(p) == "string" or
+           type(p) == "number" or
+           type(p) == "boolean"
+end
+
+function DataFile.serialize_primitive(p)
+    if type(p) == "string" then
+        return DataFile.serialize_string(p)
+    elseif type(p) == "number" then
+        return DataFile.serialize_number(p)
+    elseif type(p) == "boolean" then
+        return DataFile.serialize_boolean(p)
+    end
+
+    error("Unrecognised primitive type \""..type(p).."\".")
+end
+
+function DataFile.serialize_string(s)
+    assert(type(s) == "string")
+    return "\""..s.."\""
+end
+
+function DataFile.serialize_number(n)
+    assert(type(n) == "number")
+    return string.format("%f", n)
+end
+
+function DataFile.serialize_boolean(b)
+    assert(type(b) == "boolean")
+    if b then
+        return "true"
+    else
+        return "false"
+    end
+end
+
+function DataFile.load(filename)
+    local data_string, _ = love.filesystem.read(filename)
+
+    if not data_string then
         error("Couldn't open file \""..filename.."\"!")
     end
 
+    return DataFile.deserialize(data_string)
+end
+
+function DataFile.deserialize(data_string)
     -- Parse to beginning of root table.
-    local type, match, i = DataFile.next_non_whitespace_match(contents, 1)
-    if type ~= "table_begin" then
-        error("Expected a table at the root, found a "..type..":\n"..DataFile.get_source_string(contents, i))
+    local token_type, token, i = DataFile.next_non_whitespace_token(data_string, 1)
+    if token_type ~= "table_begin" then
+        error("Expected a table at the root, found a "..token_type..":\n"..DataFile.get_source_string(data_string, i))
     end
 
     -- Parse root table.
-    local root, i = DataFile.parse_table(contents, i)
+    local data, i = DataFile.deserialize_table(data_string, i)
 
     -- Check only whitespace after root table.
-    while i <= #contents do
-        type, match, i = DataFile.next_match(contents, i)
-        if type ~= "whitespace" then
-            error("Found "..type.." token after the end of the root table:\n"..DataFile.get_source_string(contents, i))
+    while i <= #data_string do
+        token_type, token, i = DataFile.next_token(data_string, i)
+        if token_type ~= "whitespace" then
+            error("Found "..token_type.." token after the end of the root table:\n"..DataFile.get_source_string(data_string, i))
         end
     end
 
-    return root
+    return data
 end
 
-function DataFile.next_match(contents, i)
-    for type, pattern in pairs(DataFile.TOKENS) do
-        local _, i_end, match = string.find(contents, pattern, i)
-        if match ~= nil then
+function DataFile.next_token(data_string, i)
+    for token_type, pattern in pairs(DataFile.TOKEN_TYPES) do
+        local _, i_end, token = string.find(data_string, pattern, i)
+        if token ~= nil then
             -- For debugging.
-            -- print(type, "\""..match.."\"")
-            return type, match, i_end + 1
+            -- print(token_type, "\""..token.."\"")
+            return token_type, token, i_end + 1
         end
     end
-    error("Failed to parse contents at position "..tostring(i)..":\n"..DataFile.get_source_string(contents, i))
+    error("Failed to deserialize data_string at position "..tostring(i)..":\n"..DataFile.get_source_string(data_string, i))
 end
 
-function DataFile.next_non_whitespace_match(contents, i)
-    local type, match
+function DataFile.next_non_whitespace_token(data_string, i)
+    local token_type, token
     repeat
-        type, match, i = DataFile.next_match(contents, i)
-    until(i > #contents or type ~= "whitespace")
-    return type, match, i
+        token_type, token, i = DataFile.next_token(data_string, i)
+    until(i > #data_string or token_type ~= "whitespace")
+    return token_type, token, i
 end
 
-function DataFile.parse_table(contents, i)
+function DataFile.deserialize_table(data_string, i)
     local result = {}
     local start_i = i - 1
-    local type, match, key, value
+    local token_type, token, key, value
 
     repeat
-        -- Parse key
-        if i > #contents then
-            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(contents, start_i))
+        -- Parse key or end.
+        if i > #data_string then
+            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(data_string, start_i))
         end
-        type, match, i = DataFile.next_non_whitespace_match(contents, i)
-        if type == "table_begin" then
-            key, i = DataFile.parse_table(contents, i)
-        elseif DataFile.is_primitive(type) then
-            key = DataFile.parse_primitive(type, match)
+        token_type, token, i = DataFile.next_non_whitespace_token(data_string, i)
+        if token_type == "table_end" then
+            break
+        end
+        if token_type == "table_begin" then
+            key, i = DataFile.deserialize_table(data_string, i)
+        elseif DataFile.token_type_is_primitive(token_type) then
+            key = DataFile.deserialize_primitive(token_type, token)
         else
-            error("Invalid token for table key \""..type.."\":\n"..DataFile.get_source_string(contents, i))
+            error("Expected table key or table end '}', got \""..token_type.."\":\n"..DataFile.get_source_string(data_string, i))
         end
 
-        -- Parse separator
-        if i > #contents then
-            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(contents, start_i))
+        -- Parse separator.
+        if i > #data_string then
+            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(data_string, start_i))
         end
-        type, match, i = DataFile.next_non_whitespace_match(contents, i)
-        if type ~= "table_separator" then
-            error("Expected table separator ':', got \""..type.."\":\n"..DataFile.get_source_string(contents, i))
+        token_type, token, i = DataFile.next_non_whitespace_token(data_string, i)
+        if token_type ~= "table_separator" then
+            error("Expected table separator ':', got \""..token_type.."\":\n"..DataFile.get_source_string(data_string, i))
         end
 
-        -- Parse value
-        if i > #contents then
-            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(contents, start_i))
+        -- Parse value.
+        if i > #data_string then
+            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(data_string, start_i))
         end
-        type, match, i = DataFile.next_non_whitespace_match(contents, i)
-        if type == "table_begin" then
-            value, i = DataFile.parse_table(contents, i)
-        elseif DataFile.is_primitive(type) then
-            value = DataFile.parse_primitive(type, match)
+        token_type, token, i = DataFile.next_non_whitespace_token(data_string, i)
+        if token_type == "table_begin" then
+            value, i = DataFile.deserialize_table(data_string, i)
+        elseif DataFile.token_type_is_primitive(token_type) then
+            value = DataFile.deserialize_primitive(token_type, token)
         else
-            error("Invalid token for table value \""..type.."\":\n"..DataFile.get_source_string(contents, i))
+            error("Invalid token for table value \""..token_type.."\":\n"..DataFile.get_source_string(data_string, i))
         end
 
-        -- Parse deliminator or end
-        if i > #contents then
-            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(contents, start_i))
+        -- Parse deliminator or end.
+        if i > #data_string then
+            error("Table at "..tostring(start_i).." never closed:\n"..DataFile.get_source_string(data_string, start_i))
         end
-        type, match, i = DataFile.next_non_whitespace_match(contents, i)
-        if type ~= "table_deliminator" and type ~= "table_end" then
-            error("Expected table deliminator ',' or table end '}', got \""..type.."\":\n"..DataFile.get_source_string(contents, i))
+        token_type, token, i = DataFile.next_non_whitespace_token(data_string, i)
+        if token_type ~= "table_deliminator" and token_type ~= "table_end" then
+            error("Expected table deliminator ',' or table end '}', got \""..token_type.."\":\n"..DataFile.get_source_string(data_string, i))
         end
 
         result[key] = value
-    until(type == "table_end")
+    until(token_type == "table_end")
 
     return result, i
 end
 
-function DataFile.is_primitive(type)
-    return type == "boolean1" or type == "boolean2" or
-           type == "string1" or type == "string2" or
-           type == "number"
+function DataFile.token_type_is_primitive(token_type)
+    return token_type == "boolean1" or token_type == "boolean2" or
+           token_type == "string1" or token_type == "string2" or
+           token_type == "number"
 end
 
-function DataFile.parse_primitive(type, match)
-    if type == "boolean1" or type == "boolean2" then
-        return DataFile.parse_boolean(match)
-    elseif type == "string1" or type == "string2" then
-        return DataFile.parse_string(match)
-    elseif type == "number" then
-        return DataFile.parse_number(match)
+function DataFile.deserialize_primitive(token_type, token)
+    if token_type == "boolean1" or token_type == "boolean2" then
+        return DataFile.deserialize_boolean(token)
+    elseif token_type == "string1" or token_type == "string2" then
+        return DataFile.deserialize_string(token)
+    elseif token_type == "number" then
+        return DataFile.deserialize_number(token)
     end
 
-    error("Unrecognised primitive type \""..type.."\".")
+    error("Unrecognised primitive token type \""..token_type.."\".")
 end
 
-function DataFile.parse_boolean(match)
-    if match == "true" then
+function DataFile.deserialize_boolean(token)
+    if token == "true" then
         return true
-    elseif match == "false" then
+    elseif token == "false" then
         return false
     end
-    error("Failed to parse boolean \""..match.."\".")
+    error("Failed to deserialize boolean \""..token.."\".")
 end
 
-function DataFile.parse_string(match)
-    assert((string.sub(match, 1, 1) == "\"" and string.sub(match, -1, -1) == "\"") or
-           (string.sub(match, 1, 1) == "'" and string.sub(match, -1, -1) == "'"),
-           "Failed to parse string \""..match.."\".")
-    return string.sub(match, 2, -2)
+function DataFile.deserialize_string(token)
+    assert((string.sub(token, 1, 1) == "\"" and string.sub(token, -1, -1) == "\"") or
+           (string.sub(token, 1, 1) == "'" and string.sub(token, -1, -1) == "'"),
+           "Failed to deserialize string \""..token.."\".")
+    return string.sub(token, 2, -2)
 end
 
-function DataFile.parse_number(match)
-    local number = tonumber(match)
+function DataFile.deserialize_number(token)
+    local number = tonumber(token)
     if number == nil then
-        error("Failed to parse number \""..match.."\".")
+        error("Failed to deserialize number \""..token.."\".")
     end
     return number
 end
 
-function DataFile.get_source_string(contents, i)
+function DataFile.get_source_string(data_string, i)
     local i_begin = math.max(1, i - 39)
-    local i_end = math.min(#contents, i + 40)
-    return string.sub(contents, i_begin, i_end).."\n"..string.rep(" ", i - i_begin).."^"
+    local i_end = math.min(#data_string, i + 40)
+    return string.sub(data_string, i_begin, i_end).."\n"..string.rep(" ", i - i_begin).."^"
 end

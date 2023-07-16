@@ -8,13 +8,17 @@ Camera = {
 }
 setup_class(Camera, Entity)
 
-function Camera.new()
+function Camera.new(x, y)
     local obj = magic_new()
 
-    obj.x = 0
-    obj.y = 0
+    obj.x = x
+    obj.y = y
 
     return obj
+end
+
+function Camera.from_config(config)
+    return Camera.new(config.x, config.y)
 end
 
 function Camera:update(dt)
@@ -41,4 +45,8 @@ function Camera:update(dt)
 
     self.x = clamp(self.x + movement.x2, 0, self.state.level:width_pixels() - canvas:width())
     self.y = clamp(self.y + movement.y2, 0, self.state.level:height_pixels() - canvas:height())
+end
+
+function Camera:apply_transform()
+    love.graphics.translate(-self.x, -self.y)
 end

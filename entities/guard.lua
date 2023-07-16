@@ -62,6 +62,10 @@ function Guard.new(patrol_points)
     return obj
 end
 
+function Guard.from_config(config)
+    return Guard.new(config.patrol_points)
+end
+
 function Guard:accessible_cells()
     return self.state.level.cells - (self.state.level.solid_cells + self.state.level.locked_door_cells)
 end

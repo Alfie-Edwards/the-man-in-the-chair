@@ -1,4 +1,4 @@
-Direction = { LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3 }
+Direction = { LEFT = "LEFT", RIGHT = "RIGHT", UP = "UP", DOWN = "DOWN" }
 
 function direction_to_angle(direction)
     if direction == Direction.RIGHT then

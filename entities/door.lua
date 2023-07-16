@@ -70,6 +70,10 @@ function Door.new(x, y, facing, dead_end)
     return obj
 end
 
+function Door.from_config(config)
+    return Door.new(config.x, config.y, config.direction)
+end
+
 function Door:is_transitioning()
     return t_since(self.last_toggled) < Door.ANIM_DURATION_SECONDS
 end

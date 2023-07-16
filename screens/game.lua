@@ -8,10 +8,12 @@ Game = {
 }
 setup_class(Game, SimpleElement)
 
-function Game.new()
+function Game.new(map)
     local obj = magic_new()
 
-    obj.state = GameState.new()
+    map = map or Map.new("assets/default")
+    obj.state = GameState.new(map)
+    obj.state:add(Jukebox.new(0.5))
 
     obj:set_properties(
         {
@@ -41,7 +43,7 @@ function Game:draw()
 
     love.graphics.push()
     if camera then
-        love.graphics.translate(-camera.x, -camera.y)
+        camera:apply_transform()
     end
 
     self.state.level:draw()

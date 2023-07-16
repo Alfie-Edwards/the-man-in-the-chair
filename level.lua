@@ -12,78 +12,30 @@ Level = {
 }
 setup_class(Level)
 
-function Level.from_file(filename)
-    local geom_img_file = "Map9"
-    local tile_resources = {}
-    local solid_tile_types = {}
-
-    local datafile = DataFile.load(filename)
-
-    for col_hex, name in pairs(datafile.tile_mapping) do
-        tile_resources[name] = {
-            colour_code = hex2rgb(col_hex),
-            image = assets:get_image(name),
-        }
-    end
-    solid_tile_types = datafile.solid_tiles
-
-    for _, tile_type in ipairs(solid_tile_types) do
-        if tile_resources[tile_type] == nil then
-            error("Unknown tile type listed as solid: \""..tile_type.."\".")
-        end
-    end
-
-    return Level.new(geom_img_file, tile_resources, solid_tile_types)
-end
-
-function Level:type_from_colour(r, g, b)
-    local colour = {r, g, b}
-    for tile_type, tile in pairs(self.tile_resources) do
-        if lists_equal(tile.colour_code, colour) then
-            return tile_type
-        end
-    end
-
-    return nil
-end
-
-function Level:is_solid(tile_type)
-    return value_in(tile_type, self.solid_tile_types)
-end
-
-function Level.new(geom_img_file, tile_resources, solid_tile_types)
-
-    -- debug defaults
-    if geom_img_file == nil then
-        geom_img_file = "big-level-geom"
-    end
-    if tile_resources == nil then
-        tile_resources = {
-            floor = {
-                colour_code = {1, 1, 1},
-                image = assets:get_image("floor"),
-            },
-            wall = {
-                colour_code = {0, 0, 0},
-                image = assets:get_image("wall"),
-            },
-        }
-    end
-    if solid_tile_types == nil then
-        solid_tile_types = { "wall" }
-    end
-
+function Level.new(map)
     local obj = magic_new()
 
-    obj.geom = assets:get_image_data(geom_img_file, "png")
+    obj.geom = map.level_data
 
     obj.cells = HashSet.new()
     obj.solid_cells = HashSet.new()
     obj.solid_door_cells = HashSet.new()
     obj.locked_door_cells = HashSet.new()
 
-    obj.tile_resources = tile_resources
-    obj.solid_tile_types = solid_tile_types
+    obj.tile_resources = {}
+    for col_hex, name in pairs(map.config.tile_mapping) do
+        obj.tile_resources[name] = {
+            colour_code = hex2rgb(col_hex),
+            image = assets:get_image(name),
+        }
+    end
+
+    obj.solid_tile_types = map.config.solid_tile_types
+    for _, tile_type in ipairs(obj.solid_tile_types) do
+        if obj.tile_resources[tile_type] == nil then
+            error("Unknown tile type listed as solid: \""..tile_type.."\".")
+        end
+    end
 
     for y=0,obj.geom:getHeight() - 1 do
         for x=0,obj.geom:getWidth() - 1 do
@@ -102,6 +54,21 @@ function Level.new(geom_img_file, tile_resources, solid_tile_types)
     obj.geom_img:setFilter("nearest")
 
     return obj
+end
+
+function Level:type_from_colour(r, g, b)
+    local colour = {r, g, b}
+    for tile_type, tile in pairs(self.tile_resources) do
+        if lists_equal(tile.colour_code, colour) then
+            return tile_type
+        end
+    end
+
+    return nil
+end
+
+function Level:is_solid(tile_type)
+    return value_in(tile_type, self.solid_tile_types)
 end
 
 function Level:width_pixels()

@@ -61,6 +61,10 @@ function SecurityCamera.new(x, y, direction)
     return obj
 end
 
+function SecurityCamera.from_config(config)
+    return SecurityCamera.new(config.x, config.y, config.direction)
+end
+
 function SecurityCamera:update(dt)
     super().update(self, dt)
     self.vision = raycast(
