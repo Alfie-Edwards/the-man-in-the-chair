@@ -43,8 +43,8 @@ function Camera:update(dt)
 
     movement:scale_to_length(Camera.PAN_SPEED * dt)
 
-    self.x = clamp(self.x + movement.x2, 0, self.state.level:width_pixels() - canvas:width())
-    self.y = clamp(self.y + movement.y2, 0, self.state.level:height_pixels() - canvas:height())
+    self.x = math.floor(clamp(self.x + movement.x2, 0, self.state.level:width_pixels() - canvas:width()))
+    self.y = math.floor(clamp(self.y + movement.y2, 0, self.state.level:height_pixels() - canvas:height()))
 end
 
 function Camera:apply_transform()

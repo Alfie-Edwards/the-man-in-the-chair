@@ -254,6 +254,5 @@ function raycast(level, x, y, angle, fov, max_distance)
         end
     end
 
-
     return result
 end

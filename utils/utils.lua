@@ -265,10 +265,15 @@ function normalize_angle(a)
     return a
 end
 
+function super_cover(x1, y1, x2, y2)
+
+end
+
 
 -- Import other utils files.
 require "utils.classes"
 require "utils.set"
+require "utils.list"
 require "utils.bounding_box"
 require "utils.vector"
 require "utils.event"
@@ -277,4 +282,7 @@ require "utils.hash_map"
 require "utils.hash_set"
 require "utils.a-star"
 require "utils.data_file"
+require "utils.watchable"
+require "utils.enum"
+require "utils.cell"
 

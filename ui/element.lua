@@ -8,7 +8,6 @@ Element = {
     bb = nil,
     keypressed = nil,
     click = nil,
-    mousemove = nil,
 }
 setup_class(Element)
 
@@ -62,23 +61,23 @@ end
 
 function Element:set_keypressed(value)
     if not is_type(value, "function", "nil") then
-        self:_value_error("Value must be a function with the signature (key) => bool (returns whether to consume the event), or nil.")
+        self:_value_error("Value must be a function with the signature (element, key) => bool (returns whether to consume the event), or nil.")
     end
     self:_set_property("keypressed", value)
 end
 
 function Element:set_click(value)
     if not is_type(value, "function", "nil") then
-        self:_value_error("Value must be a function with the signature (x, y, button) => bool (returns whether to consume the event), or nil.")
+        self:_value_error("Value must be a function with the signature (element, x, y, button) => bool (returns whether to consume the event), or nil.")
     end
     self:_set_property("click", value)
 end
 
-function Element:set_mousemove(value)
+function Element:set_mousemoved(value)
     if not is_type(value, "function", "nil") then
-        self:_value_error("Value must be a function with the signature (x, y, dx, dy) => bool (returns whether to consume the event), or nil.")
+        self:_value_error("Value must be a function with the signature (element, x, y, dx, dy) => bool (returns whether to consume the event), or nil.")
     end
-    self:_set_property("mousemove", value)
+    self:_set_property("mousemoved", value)
 end
 
 function Element:set_cursor(value)

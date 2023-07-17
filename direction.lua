@@ -1,4 +1,5 @@
-Direction = { LEFT = "LEFT", RIGHT = "RIGHT", UP = "UP", DOWN = "DOWN" }
+Direction = Enum.new("LEFT", "RIGHT", "UP", "DOWN")
+Axis = Enum.new("X", "Y")
 
 function direction_to_angle(direction)
     if direction == Direction.RIGHT then
@@ -10,6 +11,7 @@ function direction_to_angle(direction)
     else
         return math.pi * 0.5
     end
+    error("Invalid direction \""..tostring(direction).."\".")
 end
 
 function direction_to_x(direction)
@@ -22,6 +24,7 @@ function direction_to_x(direction)
     else
         return 0
     end
+    error("Invalid direction \""..tostring(direction).."\".")
 end
 
 function direction_to_y(direction)
@@ -34,6 +37,7 @@ function direction_to_y(direction)
     else
         return 1
     end
+    error("Invalid direction \""..tostring(direction).."\".")
 end
 
 function direction_opposite(direction)
@@ -46,4 +50,14 @@ function direction_opposite(direction)
     else
         return Direction.UP
     end
+    error("Invalid direction \""..tostring(direction).."\".")
+end
+
+function direction_axis(direction)
+    if (direction == Direction.RIGHT) or (direction == Direction.LEFT) then
+        return Axis.X
+    elseif (direction == Direction.UP) or (direction == Direction.DOWN) then
+        return Axis.Y
+    end
+    error("Invalid direction \""..tostring(direction).."\".")
 end
