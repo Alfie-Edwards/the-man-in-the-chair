@@ -8,21 +8,19 @@ Camera = {
 }
 setup_class(Camera, Entity)
 
-function Camera.new(x, y)
-    local obj = magic_new()
+function Camera:__init(state, x, y)
+    super().__init(self, state)
 
-    obj.x = x
-    obj.y = y
-
-    return obj
+    self.x = x
+    self.y = y
 end
 
-function Camera.from_config(config)
-    return Camera.new(config.x, config.y)
+function Camera.from_config(state, config)
+    return Camera(state, config.position.x, config.position.y)
 end
 
 function Camera:update(dt)
-    local movement = Vector.new(0, 0, 0, 0)
+    local movement = Vector(0, 0, 0, 0)
 
     if love.keyboard.isDown("up", "w") then
         movement.y2 = -1

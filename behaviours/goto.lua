@@ -9,18 +9,16 @@ Goto = {
 }
 setup_class(Goto, Behaviour)
 
-function Goto.new(x, y, lookahead)
-    local obj = magic_new()
+function Goto:__init(state, x, y, lookahead)
+    super().__init(self, state)
 
-    obj.x = x
-    obj.y = y
-    obj.lookahead = lookahead or 0
-
-    return obj
+    self.x = x
+    self.y = y
+    self.lookahead = lookahead or 0
 end
 
-function Goto:start(entity, state)
-    super().start(self, entity, state)
+function Goto:start(entity)
+    super().start(self, entity)
     self.path = self:pathfind()
     self.i = 1
 end
@@ -63,7 +61,7 @@ function Goto:update(dt)
         py = self.y
     end
 
-    local d = Vector.new(self.entity.x, self.entity.y, px, py)
+    local d = Vector(self.entity.x, self.entity.y, px, py)
     local sql = d:sq_length()
 
     if sql > 0 then
@@ -104,9 +102,9 @@ end
 
 function Goto:pathfind()
     return astar.path(
-        Cell.new(self.state.level:cell(self.entity.x, self.entity.y)),
-        Cell.new(self.state.level:cell(self.x, self.y)),
+        Cell(self.state.level:cell(self.entity.x, self.entity.y)),
+        Cell(self.state.level:cell(self.x, self.y)),
         self.state.level.cells - self.state.level.solid_cells,
-        true
+        false
     )
 end

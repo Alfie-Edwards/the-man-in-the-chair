@@ -1,38 +1,38 @@
-require "ui.simple_element"
+require "ui.layout_element"
 require "ui.image"
 -- require "ui.triple_button"
--- require "ui.table"
+-- require "ui.containers.grid_box"
 -- require "screens.game"
 
 LoseScreen = {}
 
-setup_class(LoseScreen, SimpleElement)
+setup_class(LoseScreen, LayoutElement)
 
-function LoseScreen.new()
-    local obj = magic_new()
+function LoseScreen:__init()
+    super().__init(self)
 
-    obj:set_properties(
+    self:set(
         {
             width = canvas:width(),
             height = canvas:height(),
         }
     )
 
-    local bg = Image.new()
-    bg:set_properties(
+    local bg = Image()
+    bg:set(
         {
             image = assets:get_image("ui/YouDied"),
             width = canvas:width(),
             height = canvas:height(),
-            click = function()
-                view:set_content(MainMenu.new())
+            mousereleased = function()
+                view:set_content(MainMenu())
             end
         }
     )
-    obj:add_child(bg)
+    self:_add_visual_child(bg)
 
-    -- local grid = Table.new()
-    -- grid:set_properties(
+    -- local grid = GridBox()
+    -- grid:set(
     --     {
     --         cols = 3,
     --         rows = 3,
@@ -40,13 +40,13 @@ function LoseScreen.new()
     --         height = canvas:height(),
     --     }
     -- )
-    -- obj:add_child(grid)
+    -- self:_add_visual_child(grid)
 
-    -- local button_play = TripleButton.new()
+    -- local button_play = TripleButton()
     -- local button_play_img = assets:get_image("ui/ButtonPlayRelease")
     -- local button_play_aspect = button_play_img:getHeight() / button_play_img:getWidth()
     -- local button_play_width = 100
-    -- button_play:set_properties(
+    -- button_play:set(
     --     {
     --         default_image = button_play_img,
     --         hover_image = assets:get_image("ui/ButtonPlayHover"),
@@ -57,18 +57,18 @@ function LoseScreen.new()
     --         y = grid:cell(1, 3).height / 2,
     --         width = button_play_width,
     --         height = button_play_width * button_play_aspect,
-    --         click = function()
-    --             view:set_content(Game.new())
+    --         mousereleased = function()
+    --             view:set_content(Game())
     --         end,
     --     }
     -- )
-    -- grid:cell(1, 3):add_child(button_play)
+    -- grid:cell(1, 3):_add_visual_child(button_play)
 
-    -- local button_quit = TripleButton.new()
+    -- local button_quit = TripleButton()
     -- local button_quit_img = assets:get_image("ui/ButtonQuitRelease")
     -- local button_quit_aspect = button_play_img:getHeight() / button_play_img:getWidth()
     -- local button_quit_width = 100
-    -- button_quit:set_properties(
+    -- button_quit:set(
     --     {
     --         default_image = button_quit_img,
     --         hover_image = assets:get_image("ui/ButtonQuitHover"),
@@ -79,12 +79,10 @@ function LoseScreen.new()
     --         y = grid:cell(3, 3).height / 2,
     --         width = button_quit_width,
     --         height = button_quit_width * button_quit_aspect,
-    --         click = function()
+    --         mousereleased = function()
     --             love.event.quit()
     --         end,
     --     }
     -- )
-    -- grid:cell(3, 3):add_child(button_quit)
-
-    return obj
+    -- grid:cell(3, 3):_add_visual_child(button_quit)
 end

@@ -3,16 +3,14 @@ HashMap = {
 }
 setup_class(HashMap)
 
-function HashMap.new(items)
-    local obj = magic_new()
+function HashMap:__init(items)
+    super().__init(self)
 
     if items then
         for key, value in pairs(items) do
-            obj[key] = value
+            self[key] = value
         end
     end
-
-    return obj
 end
 
 function HashMap:contains_key(key)
@@ -20,11 +18,9 @@ function HashMap:contains_key(key)
 end
 
 function HashMap:__pairs()
+    local key_hash, entry
     return function(t, k)
-        if k ~= nil then
-            k = k:__hash()
-        end
-        _, entry = next(self, k)
+        key_hash, entry = next(self, key_hash)
         if entry == nil then
             return nil, nil
         end
@@ -33,26 +29,26 @@ function HashMap:__pairs()
 end
 
 function HashMap:__index(key)
-    if key ~= nil and key.__hash ~= nil then
-        local entry = self[key:__hash()]
-        if entry == nil then
-            return nil
-        end
-        return entry.value
+    if not hashable(key) then
+        error("Invalid key type ("..type_string(key).."). Keys in a hashmap must implement the custom __hash metatable method.")
     end
-    return nil
+
+    return without_metatable(self, function()
+        return get_if_not_nil(self[hash(key)], "value")
+    end)
 end
 
 function HashMap:__newindex(key, value)
-    assert(key.__hash ~= nil)
+    if not hashable(key) then
+        error("Invalid key type ("..type_string(key).."). Keys in a hashmap must implement the custom __hash metatable method.")
+    end
 
     -- Temporarily unset metatable to allow direct access.
-    local mt = getmetatable(self)
-    setmetatable(self, {})
-    if value ~= nil then
-        self[key:__hash()] = {key = key, value = value}
-    else
-        self[key:__hash()] = nil
-    end
-    setmetatable(self, mt)
+    without_metatable(self, function()
+        if value ~= nil then
+            self[hash(key)] = {key = key, value = value}
+        else
+            self[hash(key)] = nil
+        end
+    end)
 end

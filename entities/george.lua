@@ -1,6 +1,5 @@
 require "entities.movable"
 require "behaviours.george"
-require "direction"
 
 George = {
     SPEED = 60,
@@ -46,20 +45,18 @@ George = {
 }
 setup_class(George, Movable)
 
-function George.new(x, y)
-    local obj = magic_new()
+function George:__init(state, x, y)
+    super().__init(self, state)
 
-    obj.x = x
-    obj.y = y
-    obj.speed = George.SPEED
-    obj.behaviour = GeorgeBehaviour.new()
-    obj.direction = Direction.DOWN
-
-    return obj
+    self.x = x
+    self.y = y
+    self.speed = George.SPEED
+    self.behaviour = GeorgeBehaviour(state)
+    self.direction = Direction.DOWN
 end
 
-function George.from_config(config)
-    return George.new(config.x, config.y)
+function George.from_config(state, config)
+    return George(state, config.position.x, config.position.y)
 end
 
 function George:draw()

@@ -9,13 +9,11 @@ Emote = {
 
 setup_class(Emote)
 
-function Emote.new(sprite_set)
-    local obj = magic_new()
+function Emote:__init(sprite_set)
+    super().__init(self)
 
-    obj.sprite_set = sprite_set
-    obj.t0 = t_now()
-
-    return obj
+    self.sprite_set = sprite_set
+    self.t0 = t_now()
 end
 
 function Emote:draw(x, y)
@@ -43,10 +41,8 @@ ExclaimationEmote = {
 
 setup_class(ExclaimationEmote, Emote)
 
-function ExclaimationEmote.new()
-    local obj = magic_new(ExclaimationEmote.SPRITE)
-
-    return obj
+function ExclaimationEmote:__init()
+    super().__init(self, ExclaimationEmote.SPRITE)
 end
 
 QuestionEmote = {
@@ -65,8 +61,6 @@ QuestionEmote = {
 
 setup_class(QuestionEmote, Emote)
 
-function QuestionEmote.new()
-    local obj = magic_new(QuestionEmote.SPRITE)
-
-    return obj
+function QuestionEmote:__init()
+    super().__init(self, QuestionEmote.SPRITE)
 end

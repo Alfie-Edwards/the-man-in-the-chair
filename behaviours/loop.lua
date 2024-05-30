@@ -6,24 +6,22 @@ Loop = {
 }
 setup_class(Loop, Behaviour)
 
-function Loop.new(...)
-    local obj = magic_new()
+function Loop:__init(state, ...)
+    super().__init(self, state)
 
-    obj.i = 1
-    obj.sub_behaviours = {...}
-    assert(#obj.sub_behaviours > 1)
-
-    return obj
+    self.i = 1
+    self.sub_behaviours = {...}
+    assert(#self.sub_behaviours > 0, "Must have at least 1 behaviour to loop.")
 end
 
-function Loop:start(entity, state)
-    super().start(self, entity, state)
+function Loop:start(entity)
+    super().start(self, entity)
     self:set_i(1)
 end
 
 function Loop:set_i(i)
     self.i = i
-    self.sub_behaviours[i]:start(self.entity, self.state)
+    self.sub_behaviours[i]:start(self.entity)
 end
 
 function Loop:update(dt)
@@ -40,5 +38,5 @@ end
 
 function Loop:draw()
     super().draw(self)
-    self.sub_behaviours[self.i]:draw(self.entity, self.state)
+    self.sub_behaviours[self.i]:draw()
 end

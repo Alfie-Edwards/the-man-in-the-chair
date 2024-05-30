@@ -8,23 +8,21 @@ DefaultBehaviour = {
 }
 setup_class(DefaultBehaviour, Behaviour)
 
-function DefaultBehaviour.new(default_behaviour_fn)
-    local obj = magic_new()
+function DefaultBehaviour:__init(state, default_behaviour_fn)
+    super().__init(self, state)
 
-    obj.default_behaviour_fn = default_behaviour_fn
-
-    return obj
+    self.default_behaviour_fn = default_behaviour_fn
 end
 
-function DefaultBehaviour:start(entity, state)
-    super().start(self, entity, state)
+function DefaultBehaviour:start(entity)
+    super().start(self, entity)
     self.default_behaviour_fn(self)
 end
 
 function DefaultBehaviour:set_sub_behaviour(behaviour)
     self.sub_behaviour = behaviour
     if self.sub_behaviour then
-        self.sub_behaviour:start(self.entity, self.state)
+        self.sub_behaviour:start(self.entity)
     end
 end
 

@@ -4,22 +4,22 @@ Enum = {
 
 setup_class(Enum)
 
-function Enum.new(...)
-    local obj = magic_new()
+function Enum:__init(...)
+    super().__init(self)
 
-    -- Temporarily unset metatable to assign _values.
-    local mt = getmetatable(obj)
-    setmetatable(obj, nil)
-    obj._values = set(...)
-    setmetatable(obj, mt)
+    without_metatable(self, function(...)
+        self._values = set(...)
+    end, ...)
 
-    for _, value in pairs(obj) do
+    for _, value in pairs(self) do
         if not type(value) == "string" then
             error("Invalid type for enum value \""..type(value).."\". Enum values must be strings.")
         end
     end
+end
 
-    return obj
+function Enum:values_list()
+    return set_to_sorted_list(self._values)
 end
 
 function Enum:is(x)
@@ -41,7 +41,6 @@ end
 
 function Enum:__pairs()
     return function(t, k)
-        print(k)
         k, _ = next(self._values, k)
         return k, k
     end, self, nil
@@ -58,4 +57,6 @@ function Enum:__tostring()
         result = result..value.." "
     end
     result = result.."}"
+
+    return result
 end

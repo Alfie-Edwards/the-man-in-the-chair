@@ -1,31 +1,30 @@
 require "ui.hacking"
 require "ui.image_button"
-require "ui.simple_element"
+require "ui.layout_element"
 require "game_state"
 
 Game = {
     state = nil,
 }
-setup_class(Game, SimpleElement)
+setup_class(Game, LayoutElement)
 
-function Game.new(map)
-    local obj = magic_new()
+function Game:__init(map)
+    super().__init(self)
 
-    map = map or Map.new("assets/default")
-    obj.state = GameState.new(map)
-    obj.state:add(Jukebox.new(0.5))
+    map = map or Map("assets/default")
+    self.state = GameState(map)
+    self.state:add(Jukebox(0.5))
+    self.state:start_all()
 
-    obj:set_properties(
+    self:set(
         {
             width = canvas:width(),
             height = canvas:height(),
         }
     )
 
-    local hacking_hud = Hacking.new(obj.state)
-    obj:add_child(hacking_hud)
-
-    return obj
+    local hacking_hud = Hacking(self.state)
+    self:_add_visual_child(hacking_hud)
 end
 
 function Game:update(dt)

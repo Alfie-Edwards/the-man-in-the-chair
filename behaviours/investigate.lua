@@ -6,12 +6,11 @@ require "behaviours.wait"
 Investigate = {}
 setup_class(Investigate, Sequence)
 
-function Investigate.new(x, y, r, n, t)
-    local obj = magic_new(
-        Goto.new(x, y),
-        Wait.new(t),
-        LookAround.new(x, y, r, n, t)
+function Investigate:__init(state, x, y, r, n, t)
+    super().__init(self,
+        state,
+        Goto(state, x, y),
+        Wait(state, t),
+        LookAround(state, x, y, r, n, t)
     )
-
-    return obj
 end

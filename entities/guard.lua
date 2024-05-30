@@ -1,7 +1,5 @@
 require "entities.movable"
 require "behaviours.guard"
-require "direction"
-
 
 Guard = {
     SPEED = 80,
@@ -47,23 +45,21 @@ Guard = {
 }
 setup_class(Guard, Movable)
 
-function Guard.new(patrol_points)
-    local obj = magic_new()
+function Guard:__init(state, patrol_points)
+    super().__init(self, state)
 
-    assert(#patrol_points)
-    obj.x = patrol_points[1].x
-    obj.y = patrol_points[1].y
-    obj.speed = Guard.SPEED
-    obj.behaviour = GuardBehaviour.new(patrol_points)
-    obj.direction = Direction.DOWN
-    obj.vision = HashSet.new()
-    obj.moved_last = false
-
-    return obj
+    assert(#patrol_points, "Guard must have at least 1 patrol point.")
+    self.x = patrol_points[1].x
+    self.y = patrol_points[1].y
+    self.speed = Guard.SPEED
+    self.behaviour = GuardBehaviour(state, patrol_points)
+    self.direction = Direction.DOWN
+    self.vision = HashSet()
+    self.moved_last = false
 end
 
-function Guard.from_config(config)
-    return Guard.new(config.patrol_points)
+function Guard.from_config(state, config)
+    return Guard(state, config.patrol_points)
 end
 
 function Guard:accessible_cells()
@@ -74,12 +70,12 @@ function Guard:update(dt)
     super().update(self, dt)
 
     self.vision = raycast(
-        self.state.level,
-        self.x,
-        self.y,
+        self.x / self.state.level.cell_length_pixels,
+        self.y / self.state.level.cell_length_pixels,
         direction_to_angle(self.direction),
         SecurityCamera.FOV,
-        SecurityCamera.VIEW_DISTANCE * self.state.level.cell_length_pixels)
+        SecurityCamera.VIEW_DISTANCE,
+        self.state.level.cells - self.state.level.solid_cells)
 end
 
 function Guard:draw()

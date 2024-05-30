@@ -3,7 +3,6 @@ Map = {
     DEFAULT_WIDTH = 144,
     DEFAULT_HEIGHT = 27,
     EXT = ".map",
-    CONFIG_FIELDS = list_to_set({"tile_mapping", "solid_tile_types", "camera", "security_cameras", "doors", "guards", "george"}),
     CONFIG_FILE = "config.data",
     LEVEL_FILE = "level.png",
 
@@ -23,8 +22,8 @@ function Map._UID()
     return uid
 end
 
-function Map.new(filename)
-    local obj = magic_new()
+function Map:__init(filename)
+    super().__init(self)
 
     -- Resolve filename.
     if not filename then
@@ -33,47 +32,37 @@ function Map.new(filename)
     filename = filename..Map.EXT
 
     -- Load map.
-    obj.data, err = love.filesystem.newFileData(filename)
-    if err or obj.data == nil then
+    self.data, err = love.filesystem.newFileData(filename)
+    if err or self.data == nil then
         error("Failed to load map \""..filename.."\":\n"..(err or "Unknown error."))
     end
 
     -- Get uid and update data name to match.
-    obj.uid = Map._UID()
-    obj.data = love.filesystem.newFileData(obj.data, obj.uid)
+    self.uid = Map._UID()
+    self.data = love.filesystem.newFileData(self.data, self.uid)
 
     -- Mount map as in-memory archive.
-    if not love.filesystem.mount(obj.data, obj.uid) then
-        error("Failed to mount data from map file \""..filename.."\" to path \""..obj.uid.."\".")
+    if not love.filesystem.mount(self.data, self.uid) then
+        error("Failed to mount data from map file \""..filename.."\" to path \""..self.uid.."\".")
     end
 
-    -- Load the config and level from the in-memory archive (or create defualts if they are missing).a
-    obj.config_file_path = obj.uid.."/"..Map.CONFIG_FILE
-    obj.level_file_path = obj.uid.."/"..Map.LEVEL_FILE
+    -- Load the config and level from the in-memory archive (or create defaults if they are missing).a
+    self.config_file_path = self.uid.."/"..Map.CONFIG_FILE
+    self.level_file_path = self.uid.."/"..Map.LEVEL_FILE
 
-    if love.filesystem.getInfo(obj.config_file_path, "file") then
-        obj.config = DataFile.load(obj.config_file_path)
+    if love.filesystem.getInfo(self.config_file_path, "file") then
+        self.config = DataFile.load(self.config_file_path)
     else
-        obj.config = {}
-    end
-    for field, _ in pairs(obj.config) do
-        if not Map.CONFIG_FIELDS[field] then
-            print("WARNING: Unrecognised config field \""..field.."\" in map \""..filename.."\".")
-        end
-    end
-    for field, _ in pairs(Map.CONFIG_FIELDS) do
-        if obj.config[field] == nil then
-            obj.config[field] = {}
-        end
+        self.config = {}
     end
 
-    if love.filesystem.getInfo(obj.level_file_path, "file") then
-        obj.level_data = love.image.newImageData(obj.level_file_path)
+    MapSchemas.config:complete(x)
+
+    if love.filesystem.getInfo(self.level_file_path, "file") then
+        self.level_data = love.image.newImageData(self.level_file_path)
     else
-        obj.level_data = love.image.newImageData(Map.DEFAULT_WIDTH, Map.DEFAULT_HEIGHT)
+        self.level_data = love.image.newImageData(Map.DEFAULT_WIDTH, Map.DEFAULT_HEIGHT)
     end
-
-    return obj
 end
 
 function Map:save(filename)
@@ -91,11 +80,10 @@ end
 function Map.get_available_maps()
     local result = {}
 
-    local save_dir = love.filesystem.getSaveDirectory()
-    local files = love.filesystem.getrectoryItems(save_dir)
+    local files = love.filesystem.getDirectoryItems("")
     for _, path in ipairs(files) do
         if Map.is_map_file(path) then
-            table.insert(result, path)
+            table.insert(result, string.sub(path, 1, -#Map.EXT - 1))
         end
     end
     return result
@@ -116,3 +104,42 @@ function Map:__gc()
     -- Unmount in-memory archive.
     love.filesystem.unmount(self.uid)
 end
+
+
+MapSchemas = {}
+
+-- Primitives.
+MapSchemas.color = PatternSchema("#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]", "#000000")
+MapSchemas.direction = EnumSchema(Direction)
+MapSchemas.position = Schema({x = TypeSchema.NUMBER, y = TypeSchema.NUMBER})
+MapSchemas.path = ListSchema(MapSchemas.position)
+
+-- Entities.
+MapSchemas.camera = Schema({
+    position = MapSchemas.position,
+})
+MapSchemas.security_camera = Schema({
+    position = MapSchemas.position,
+    direction = MapSchemas.direction,
+})
+MapSchemas.door = Schema({
+    position = MapSchemas.position,
+    direction = MapSchemas.direction,
+})
+MapSchemas.guard = Schema({
+    patrol_points = MapSchemas.path,
+})
+MapSchemas.george = Schema({
+    position = MapSchemas.position,
+})
+
+-- Config file.
+MapSchemas.config = Schema({
+    tile_mapping = MapSchema(PatternSchema.COLOR, TypeSchema.STRING),
+    solid_tile_types = ListSchema(TypeSchema.STRING),
+    camera = MapSchemas.camera,
+    security_cameras = ListSchema(MapSchemas.security_camera),
+    doors = ListSchema(MapSchemas.door),
+    guards = ListSchema(MapSchemas.guard),
+    george = MapSchemas.george,
+})

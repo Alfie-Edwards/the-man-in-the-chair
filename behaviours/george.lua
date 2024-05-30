@@ -8,12 +8,10 @@ GeorgeBehaviour = {
 }
 setup_class(GeorgeBehaviour, DefaultBehaviour)
 
-function GeorgeBehaviour.new()
-    local obj = magic_new(GeorgeBehaviour.find_door)
+function GeorgeBehaviour:__init(state)
+    super().__init(self, state, GeorgeBehaviour.find_door)
 
-    obj.find_door_behaviour = FindDoor.new()
-
-    return obj
+    self.find_door_behaviour = FindDoor(state)
 end
 
 function GeorgeBehaviour:find_door()
@@ -28,7 +26,7 @@ function GeorgeBehaviour:update(dt)
                 jukebox:silence()
             end
         )
-        view:set_content(WinScreen.new())
+        view:set_content(WinScreen())
     end
     return false
 end

@@ -12,48 +12,46 @@ Level = {
 }
 setup_class(Level)
 
-function Level.new(map)
-    local obj = magic_new()
+function Level:__init(map)
+    super().__init(self)
 
-    obj.geom = map.level_data
+    self.geom = map.level_data
 
-    obj.cells = HashSet.new()
-    obj.solid_cells = HashSet.new()
-    obj.solid_door_cells = HashSet.new()
-    obj.locked_door_cells = HashSet.new()
+    self.cells = HashSet()
+    self.solid_cells = HashSet()
+    self.solid_door_cells = HashSet()
+    self.locked_door_cells = HashSet()
 
-    obj.tile_resources = {}
+    self.tile_resources = {}
     for col_hex, name in pairs(map.config.tile_mapping) do
-        obj.tile_resources[name] = {
+        self.tile_resources[name] = {
             colour_code = hex2rgb(col_hex),
             image = assets:get_image(name),
         }
     end
 
-    obj.solid_tile_types = map.config.solid_tile_types
-    for _, tile_type in ipairs(obj.solid_tile_types) do
-        if obj.tile_resources[tile_type] == nil then
+    self.solid_tile_types = map.config.solid_tile_types
+    for _, tile_type in ipairs(self.solid_tile_types) do
+        if self.tile_resources[tile_type] == nil then
             error("Unknown tile type listed as solid: \""..tile_type.."\".")
         end
     end
 
-    for y=0,obj.geom:getHeight() - 1 do
-        for x=0,obj.geom:getWidth() - 1 do
-            obj.cells:add(Cell.new(x, y))
+    for y=0,self.geom:getHeight() - 1 do
+        for x=0,self.geom:getWidth() - 1 do
+            self.cells:add(Cell(x, y))
 
-            local tile_type = obj:type_from_colour(obj:colour_at_pixel(x, y))
+            local tile_type = self:type_from_colour(self:colour_at_pixel(x, y))
             assert(tile_type ~= nil)
-            if obj:is_solid(tile_type) then
-                obj.solid_cells:add(Cell.new(x, y))
+            if self:is_solid(tile_type) then
+                self.solid_cells:add(Cell(x, y))
             end
         end
     end
 
     -- geom as an image, to draw for debugging
-    obj.geom_img = love.graphics.newImage(obj.geom)
-    obj.geom_img:setFilter("nearest")
-
-    return obj
+    self.geom_img = love.graphics.newImage(self.geom)
+    self.geom_img:setFilter("nearest")
 end
 
 function Level:type_from_colour(r, g, b)
@@ -174,7 +172,7 @@ function Level:cell_solid(x, y, doors_are_solid)
     if doors_are_solid == nil then
         doors_are_solid = true
     end
-    local cell = Cell.new(x, y)
+    local cell = Cell(x, y)
     if doors_are_solid and self.solid_door_cells[cell] then
         return true
     end
@@ -189,70 +187,4 @@ function Level:solid(pos)
     local cell_x, cell_y = self:cell(pos.x, pos.y)
 
     return Level:cell_solid(cell_x, cell_y)
-end
-
-Cell = {
-    x = nil,
-    y = nil,
-}
-setup_class(Cell)
-
-function Cell.new(x, y)
-    local obj = magic_new()
-
-    obj.x = x
-    obj.y = y
-
-    return obj
-end
-
-function Cell:__eq(other)
-    if not is_type(other, Cell) then
-        return false
-    end
-    return self:__hash() == other:__hash()
-end
-
-function Cell:__tostring()
-    return "Cell("..tostring(self.x)..", "..tostring(self.y)..")"
-end
-
-function Cell:__hash()
-    return tostring(self.x)..","..tostring(self.y)
-end
-
-function raycast(level, x, y, angle, fov, max_distance)
-    local result = HashSet.new()
-
-    -- Adjust from world-space into level-space
-    x = x / level.cell_length_pixels
-    y = y / level.cell_length_pixels
-    max_distance = max_distance / level.cell_length_pixels
-
-    local start_cell = Cell.new(math.floor(x), math.floor(y))
-    local angle_start = angle - fov / 2
-    local angle_end = angle - fov / 2
-    local arc_length = max_distance * fov
-    local rays = math.max(2, math.ceil(arc_length * 2))
-    local d_angle = 0
-    local inc = max_distance / math.ceil(max_distance)
-    for i=1,rays do
-        local ray_x = x
-        local ray_y = y
-        local ray_angle = angle_start + ((i - 1) * fov) / (rays - 1)
-        local dx = math.cos(ray_angle)
-        local dy = math.sin(ray_angle)
-        for distance = 0, max_distance, inc do
-            local cell = Cell.new(math.floor(x + dx * distance), math.floor(y + dy * distance))
-            if (level:cell_out_of_bounds(cell.x, cell.y) or level:cell_solid(cell.x, cell.y)) then
-                if cell ~= start_cell then
-                    break
-                end
-            else
-                result:add(cell)
-            end
-        end
-    end
-
-    return result
 end

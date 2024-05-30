@@ -6,21 +6,19 @@ GotoTarget = {
 }
 setup_class(GotoTarget, Goto)
 
-function GotoTarget.new(target)
-    local obj = magic_new(target.x, target.y)
-    obj.target = target
-
-    return obj
+function GotoTarget:__init(state, target)
+    super().__init(self, state, target.x, target.y)
+    self.target = target
 end
 
-function GotoTarget:start(entity, state)
-    super().start(self, entity, state)
+function GotoTarget:start(entity)
+    super().start(self, entity)
 end
 
 function GotoTarget:refresh_path()
     self.x = self.target.x
     self.y = self.target.y
-    super().start(self, self.entity, self.state)
+    super().start(self, self.entity)
 end
 
 function GotoTarget:dist_to_target()

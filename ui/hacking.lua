@@ -22,64 +22,64 @@ Hacking = {
 }
 setup_class(Hacking, Element)
 
-function Hacking.new(state)
-    local obj = magic_new()
+function Hacking:__init(state)
+    super().__init(self)
 
-    obj.state = state
+    self.state = state
 
-    obj.points = Hacking.MAX_POINTS
+    self.points = Hacking.MAX_POINTS
 
     local close_img = assets:get_image("ui/HackDoor1Closed")
-    obj.door_open_icon_offset_x = close_img:getWidth()
+    self.door_open_icon_offset_x = close_img:getWidth()
 
     -- icons over each door
     state:foreach("Door",
         function(door)
-            local button_positions = obj:door_button_positions(door)
+            local button_positions = self:door_button_positions(door)
 
             -- 'close' icon
-            local close_door_button = ImageButton.new()
-            close_door_button:set_properties({
+            local close_door_button = ImageButton()
+            close_door_button:set({
                 image = close_img,
                 image_data = assets:get_image_data("ui/HackDoor1Closed"),
                 x_align = "left",
                 y_align = "bottom",
                 x = button_positions.close.x,
                 y = button_positions.close.y,
-                click = function()
+                mousereleased = function()
                     if door.is_locked and
                        not door.is_open and
                        not door:is_transitioning() then
-                        obj:unlock_door(door)
+                        self:unlock_door(door)
                     else
-                        obj:lock_door_closed(door)
+                        self:lock_door_closed(door)
                     end
                 end,
             })
-            obj:add_child(close_door_button)
+            self:_add_visual_child(close_door_button)
 
             -- 'open' icon
-            local open_door_button = ImageButton.new()
-            open_door_button:set_properties({
+            local open_door_button = ImageButton()
+            open_door_button:set({
                 image = assets:get_image("ui/HackDoor1Open"),
                 image_data = assets:get_image_data("ui/HackDoor1Open"),
                 x_align = "left",
                 y_align = "bottom",
                 x = button_positions.open.x,
                 y = button_positions.open.y,
-                click = function()
+                mousereleased = function()
                     if door.is_locked and
                        door.is_open and
                        not door:is_transitioning() then
-                        obj:unlock_door(door)
+                        self:unlock_door(door)
                     else
-                        obj:lock_door_open(door)
+                        self:lock_door_open(door)
                     end
                 end,
             })
-            obj:add_child(open_door_button)
+            self:_add_visual_child(open_door_button)
 
-            obj.door_button_map[door] = {
+            self.door_button_map[door] = {
                 open = open_door_button,
                 close = close_door_button,
             }
@@ -87,11 +87,11 @@ function Hacking.new(state)
     )
 
     -- points background banner
-    local points_bg = Image.new()
+    local points_bg = Image()
     local points_bg_img = assets:get_image("ui/HackBG")
     local points_bg_width = points_bg_img:getWidth() * Hacking.POINT_ICON_SIZE_SCALE
     local points_bg_aspect = points_bg_img:getHeight() / points_bg_img:getWidth()
-    points_bg:set_properties({
+    points_bg:set({
         image = points_bg_img,
         image_data = assets:get_image_data("ui/HackBG"),
         x_align = "left",
@@ -101,7 +101,7 @@ function Hacking.new(state)
         width = points_bg_width,
         height = points_bg_width * points_bg_aspect,
     })
-    obj:add_child(points_bg)
+    self:_add_visual_child(points_bg)
 
     -- individual point icons
     local point_img = assets:get_image("ui/Hack1")
@@ -115,8 +115,8 @@ function Hacking.new(state)
                                 (total_points_width / 2)
 
     for i=1,Hacking.MAX_POINTS do
-        local point_icon = Image.new()
-        point_icon:set_properties({
+        local point_icon = Image()
+        point_icon:set({
             image = img,
             image_data = assets:get_image_data("ui/Hack1"),
             x_align = "left",
@@ -126,12 +126,10 @@ function Hacking.new(state)
             width = point_img_width,
             height = point_img_width * point_img_aspect,
         })
-        obj:add_child(point_icon)
+        self:_add_visual_child(point_icon)
 
-        table.insert(obj.point_icons, point_icon)
+        table.insert(self.point_icons, point_icon)
     end
-
-    return obj
 end
 
 function Hacking:use_point()
@@ -139,7 +137,7 @@ function Hacking:use_point()
         return false
     end
 
-    self.point_icons[self.points]:set_properties({
+    self.point_icons[self.points]:set({
         image = assets:get_image("ui/Hack2"),
         image_data = assets:get_image_data("ui/Hack2"),
     })
@@ -152,7 +150,7 @@ end
 function Hacking:restore_point()
     self.points = math.min(self.points + 1, Hacking.MAX_POINTS)
 
-    self.point_icons[self.points]:set_properties({
+    self.point_icons[self.points]:set({
         image = assets:get_image("ui/Hack1"),
         image_data = assets:get_image_data("ui/Hack1"),
     })
@@ -222,12 +220,12 @@ function Hacking:update(dt)
     for door, buttons in pairs(self.door_button_map) do
         local button_positions = self:door_button_positions(door)
 
-        buttons.close:set_properties({
+        buttons.close:set({
             x = button_positions.close.x,
             y = button_positions.close.y,
         })
 
-        buttons.open:set_properties({
+        buttons.open:set({
             x = button_positions.open.x,
             y = button_positions.open.y,
         })

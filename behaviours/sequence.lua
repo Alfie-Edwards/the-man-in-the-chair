@@ -6,23 +6,21 @@ Sequence = {
 }
 setup_class(Sequence, Behaviour)
 
-function Sequence.new(...)
-    local obj = magic_new()
+function Sequence:__init(state, ...)
+    super().__init(self, state)
 
-    obj.sub_behaviours = {...}
-    assert(#obj.sub_behaviours > 1)
-
-    return obj
+    self.sub_behaviours = {...}
+    assert(#self.sub_behaviours > 1)
 end
 
-function Sequence:start(entity, state)
-    super().start(self, entity, state)
+function Sequence:start(entity)
+    super().start(self, entity)
     self:set_i(1)
 end
 
 function Sequence:set_i(i)
     self.i = i
-    self.sub_behaviours[i]:start(self.entity, self.state)
+    self.sub_behaviours[i]:start(self.entity)
 end
 
 function Sequence:update(dt)

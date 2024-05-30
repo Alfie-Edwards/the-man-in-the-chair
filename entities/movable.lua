@@ -24,20 +24,18 @@ Movable = {
 }
 setup_class(Movable, Entity)
 
-function Movable.new()
-    local obj = magic_new()
+function Movable:__init(state)
+    super().__init(self, state)
 
-    obj.moved_last_tick = false
+    self.moved_last_tick = false
 
-    obj.footstep_sounds = {
+    self.footstep_sounds = {
         assets:get_sound("Sound/Footstep1", "wav"),
         assets:get_sound("Sound/Footstep2", "wav"),
         assets:get_sound("Sound/Footstep3", "wav"),
     }
-    obj.footstep_period = obj.WALK_CYCLE_PERIOD / 2
-    obj.t_last_footstep = t_since(obj.footstep_period)
-
-    return obj
+    self.footstep_period = self.WALK_CYCLE_PERIOD / 2
+    self.t_last_footstep = t_since(self.footstep_period)
 end
 
 function Movable:is_moving()

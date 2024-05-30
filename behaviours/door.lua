@@ -4,10 +4,8 @@ DoorBehaviour = {
 }
 setup_class(DoorBehaviour, Behaviour)
 
-function DoorBehaviour.new()
-    local obj = magic_new()
-
-    return obj
+function DoorBehaviour:__init(state)
+    super().__init(self, state)
 end
 
 function DoorBehaviour:update(dt)

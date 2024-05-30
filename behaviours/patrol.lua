@@ -4,18 +4,16 @@ require "behaviours.goto"
 Patrol = {}
 setup_class(Patrol, Loop)
 
-function Patrol.new(patrol_points)
+function Patrol:__init(state, patrol_points)
     local gotos = {}
     for i, point in ipairs(patrol_points) do
-        gotos[i] = Goto.new(point.x, point.y)
+        gotos[i] = Goto(state, point.x, point.y)
     end
-    local obj = magic_new(unpack(gotos))
-
-    return obj
+    super().__init(self, state, unpack(gotos))
 end
 
-function Patrol:start(entity, state)
-    super().start(self, entity, state)
+function Patrol:start(entity)
+    super().start(self, entity)
     local closest_i = 0
     local closest_dist = math.huge
     for i, sub_behaviour in ipairs(self.sub_behaviours) do

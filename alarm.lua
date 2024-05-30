@@ -3,10 +3,8 @@ Alarm = {
 }
 setup_class(Alarm)
 
-function Alarm.new(mode)
-    local obj = magic_new()
-
-    return obj
+function Alarm:__init(mode)
+    super().__init(self)
 end
 
 function Alarm:on()

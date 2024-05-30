@@ -7,21 +7,19 @@ TurnToTarget = {
 }
 setup_class(TurnToTarget, Behaviour)
 
-function TurnToTarget.new(target, min, max)
-    local obj = magic_new()
+function TurnToTarget:__init(state, target, min, max)
+    super().__init(self, state)
 
-    obj.target = target
-    obj.min = normalize_angle(min)
-    obj.max = normalize_angle(max)
-
-    return obj
+    self.target = target
+    self.min = normalize_angle(min)
+    self.max = normalize_angle(max)
 end
 
 function TurnToTarget:update(dt)
     super().update(self, dt)
 
     local cx, cy = self.entity:centre()
-    local displacement = Vector.new(cx, cy, self.target.x, self.target.y)
+    local displacement = Vector(cx, cy, self.target.x, self.target.y)
     local target_angle = math.atan2(displacement:dy(), displacement:dx())
 
     local past_min = normalize_angle(self.min - target_angle)

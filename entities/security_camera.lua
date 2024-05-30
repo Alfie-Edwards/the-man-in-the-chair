@@ -47,33 +47,31 @@ SecurityCamera = {
 }
 setup_class(SecurityCamera, Entity)
 
-function SecurityCamera.new(x, y, direction)
-    local obj = magic_new()
+function SecurityCamera:__init(state, x, y, direction)
+    super().__init(self, state)
 
-    obj.sweep_speed = SecurityCamera.SWEEP_SPEED
-    obj.x = x
-    obj.y = y
-    obj.angle = direction_to_angle(direction)
-    obj.direction = direction
-    obj.vision = HashSet.new()
-    obj.behaviour = SecurityCameraBehaviour.new(obj.angle)
-
-    return obj
+    self.sweep_speed = SecurityCamera.SWEEP_SPEED
+    self.x = x
+    self.y = y
+    self.angle = direction_to_angle(direction)
+    self.direction = direction
+    self.vision = HashSet()
+    self.behaviour = SecurityCameraBehaviour(state, self.angle)
 end
 
-function SecurityCamera.from_config(config)
-    return SecurityCamera.new(config.x, config.y, config.direction)
+function SecurityCamera.from_config(state, config)
+    return SecurityCamera(state, config.position.x, config.position.y, config.direction)
 end
 
 function SecurityCamera:update(dt)
     super().update(self, dt)
     self.vision = raycast(
-        self.state.level,
-        self.x * self.state.level.cell_length_pixels,
-        self.y * self.state.level.cell_length_pixels,
+        self.x,
+        self.y,
         self.angle,
         SecurityCamera.FOV,
-        SecurityCamera.VIEW_DISTANCE * self.state.level.cell_length_pixels)
+        SecurityCamera.VIEW_DISTANCE,
+        self.state.level.cells - self.state.level.solid_cells)
 end
 
 function SecurityCamera:get_sprite()
@@ -109,8 +107,8 @@ function SecurityCamera:centre()
     local x_offset = 0.5
     local y_offset = 0.5
     if self.state.level:cell_solid(self.x, self.y) then
-        x_offset = direction_to_x(self.direction) * (10 / 16)
-        y_offset = direction_to_y(self.direction) * (10 / 16)
+        x_offset = x_offset + direction_to_x(self.direction) * (10 / 16)
+        y_offset = y_offset + direction_to_y(self.direction) * (10 / 16)
     end
     return (self.x + x_offset) * self.state.level.cell_length_pixels,
            (self.y + y_offset) * self.state.level.cell_length_pixels

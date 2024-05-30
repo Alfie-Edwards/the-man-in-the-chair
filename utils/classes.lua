@@ -1,13 +1,37 @@
 _classes = {}
-_method_owner_cache = {}
+_method_owner_map = {}
 
 function type_string(inst)
     -- Class instances and LOVE objects have their own type function.
-    local type = type(inst)
-    if ((type == "table" or type == "userdata") and inst.type ~= nil) then
+    local t = type(inst)
+    if ((t == "table" or t == "userdata") and inst.type ~= nil) then
         return inst:type()
     end
-    return type
+    return t
+end
+
+function details_string(t)
+    -- Useful for telling classes apart in error messages.
+
+    if get_metatable_value(t, "__tostring") then
+        return tostring(t)
+    end
+
+    local typestring = type_string(t)
+    if typestring == "table" or typestring == "function" or typestring == "nil" then
+        return typestring
+    end
+
+    local valuestring = tostring(t)
+
+    if typestring == "number" or typestring == "boolean" then
+        return valuestring
+    end
+    if typestring == "string" then
+        return '"'..valuestring..'"'
+    end
+
+    return valuestring.." ("..typestring..")"
 end
 
 function is_basic_type(inst)
@@ -52,38 +76,49 @@ function setup_class(class, super)
     if (class ~= BaseObjectClass and super == nil) then
         super = BaseObjectClass
     end
-    local name = get_key(_G, class)
+    local name = get_key(getfenv(), class)
+
+    -- Register existing methods.
+    for k, v in pairs(class) do
+        if type(v) == "function" then
+            _method_owner_map[v] = class
+        end
+    end
+
     setmetatable(class,
         {
             __template = super, -- Custom field.
+            __pairs = template_pairs, -- Custom field.
             __index = super,
             __name = name,
+            __call = function(self, ...)
+                local inst = {}
+                setup_instance(inst, class)
+                inst:__init(...)
+                return inst
+            end,
+
+            -- Register methods created after setup_class is called.
+            __newindex = function(self, k, v)
+                if type(v) == "function" then
+                    _method_owner_map[v] = class
+                end
+                local mt = getmetatable(self)
+                local ni = mt.__newindex
+                mt.__newindex = nil
+                class[k] = v
+                mt.__newindex = ni
+            end,
         }
     )
     _classes[class] = true
-end
-
-function magic_new(...)
-    -- Create an instance of the class this method was called from.class
-    -- Args are passed to the super class constructor.
-    local class = get_calling_class()
-    local inst = nil
-    local super = super(class)
-    if (super == nil) or (super.new == nil) then
-        inst = {}
-    else
-        inst = super.new(...)
-    end
-
-    setup_instance(inst, class)
-    return inst
 end
 
 function setup_instance(inst, class)
     -- Setup the given table as an instance of the given class.
     assert(class ~= nil)
     assert(type(class) == "table")
-    setmetatable(inst, generate_inheritance_metatable(class))
+    setmetatable(inst, generate_instance_metatable(class))
 end
 
 function super(class)
@@ -92,23 +127,28 @@ function super(class)
     if class == nil then
         class = get_calling_class()
     end
-    local mt = getmetatable(class)
-    if mt == nil then
-        return nil
+    return get_metatable_value(class,  "__template")
+end
+
+function class(inst)
+    -- Get the super class of the given class.
+    -- If called from a class method, the class can be inferred.
+    if inst == nil then
+        return get_calling_class()
     end
-    return mt.__template
+    return get_metatable_value(inst,  "__template")
 end
 
 function get_calling_class()
     -- Must be called from a class method, returns the class.
     local info = debug.getinfo(3, 'f')
-    if _method_owner_cache[info.func] ~= nil then
-        return _method_owner_cache[info.func]
+    if _method_owner_map[info.func] ~= nil then
+        return _method_owner_map[info.func]
     end
     for class, _ in next, _classes, nil do
         for _, v in next, class, nil do
             if v == info.func then
-                _method_owner_cache[info.func] = class
+                _method_owner_map[info.func] = class
                 return class
             end
         end
@@ -116,7 +156,7 @@ function get_calling_class()
     error("Calling method must be owned by a class which has had `setup_class` called.")
 end
 
-function generate_inheritance_metatable(class)
+function generate_instance_metatable(class)
     -- Create a metatable from the metatable values defined in the class and super classes.
     local mt = {}
 
@@ -146,15 +186,15 @@ end
 
 -- Override pairs to iterate over our class hierarchy.
 function pairs(target)
-    local mt = getmetatable(target)
-    if mt == nil or (mt.__pairs == nil and mt.__template == nil) then
-        return next, target, nil
-    end
+    return nil_coalesce(get_metatable_value(target, "__pairs"), native_pairs)(target)
+ end
 
-    if mt.__pairs ~= nil then
-        return mt.__pairs(target)
-    end
+function native_pairs(target)
+    return next, target, nil
+end
 
+function template_pairs(target)
+    -- Iterate recursively over custom metatable field __template.
     local seen = {}
     return function(t, k)
         local v = nil
@@ -172,12 +212,7 @@ function pairs(target)
             end
 
             -- If we did not find a key we are done iterating this target, move onto the next.
-            local mt = getmetatable(target)
-            if mt == nil then
-                target = nil
-            else
-                target = mt.__template
-            end
+            target = get_metatable_value(target, "__template")
         end
 
         -- No more targets, stop iteration.
@@ -187,38 +222,31 @@ end
 
 BaseObjectClass = {}
 
+function BaseObjectClass:__init()
+end
+
 function BaseObjectClass:type()
-    local mt = getmetatable(self)
-    if mt ~= nil then
-        if mt.__name ~= nil then
-            -- Return name directly from mt if this is a class.
-            return mt.__name
-        end
-
-        if mt.__template ~= nil then
-            -- Return name from class' metatable.
-            mt = getmetatable(mt.__template)
-            if mt ~= nil and mt.__name ~= nil then
-                return mt.__name
-            end
-        end
-    end
-
-    error("Could not identify type.")
+    assert(self ~= nil, "type is a method and must be called like `x:type()`, rather than `x.type()`.")
+    return error_if_nil(
+        nil_coalesce(
+            get_metatable_value(self, "__name"),
+            get_metatable_value(get_metatable_value(self, "__template"), "__name")
+        ),
+        "Could not identify type."
+    )
 end
 
 function BaseObjectClass:typeOf(type_name)
+    assert(self ~= nil, "typeOf is a method and must be called like `x:typeOf(type_name)`, rather than `x.typeOf(type_name)`.")
     while self do
         if self:type() == type_name then
             return true
         end
-        local mt = getmetatable(x)
-        if mt == nil then
-            return false
-        end
-        self = mt.__template
+        self = get_metatable_value(self, "__template")
     end
     return false
 end
+
+BaseObjectClass.__pairs = template_pairs
 
 setup_class(BaseObjectClass)

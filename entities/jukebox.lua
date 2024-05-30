@@ -7,29 +7,27 @@ Jukebox = {
 }
 setup_class(Jukebox, Entity)
 
-function Jukebox.new(volume)
-    local obj = magic_new()
+function Jukebox:__init(state, volume)
+    super().__init(self, state)
 
     if volume == nil then
         volume = 1
     end
 
-    obj.tracks = {
+    self.tracks = {
         default = love.audio.newSource("assets/Sound/MusicBG2Normal.WAV", "stream"),
         alarm = love.audio.newSource("assets/Sound/MusicBG2Alarm.WAV", "stream"),
     }
-    obj.volume = volume
+    self.volume = volume
 
-    obj:silence()
+    self:silence()
 
-    for _,audio in pairs(obj.tracks) do
+    for _,audio in pairs(self.tracks) do
         audio:setLooping(true)
         audio:play()
     end
 
-    obj:set_track("default")
-
-    return obj
+    self:set_track("default")
 end
 
 function Jukebox:silence()

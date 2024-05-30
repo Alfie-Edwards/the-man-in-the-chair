@@ -1,4 +1,3 @@
-require "direction"
 require "asset_cache"
 
 sprite = {}

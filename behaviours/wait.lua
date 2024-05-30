@@ -6,16 +6,14 @@ Wait = {
 }
 setup_class(Wait, Behaviour)
 
-function Wait.new(t)
-    local obj = magic_new()
+function Wait:__init(state, t)
+    super().__init(self, state)
 
-    obj.t = t
-
-    return obj
+    self.t = t
 end
 
-function Wait:start(entity, state)
-    super().start(self, entity, state)
+function Wait:start(entity)
+    super().start(self, entity)
     self.t0 = love.timer.getTime()
 end
 

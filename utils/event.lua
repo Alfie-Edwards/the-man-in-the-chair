@@ -3,12 +3,10 @@ Event = {
 }
 setup_class(Event)
 
-function Event.new()
-    local obj = magic_new()
+function Event:__init()
+    super().__init(self)
 
-    obj.handlers = {}
-
-    return obj
+    self.handlers = {}
 end
 
 function Event:subscribe(handler)

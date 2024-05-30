@@ -6,19 +6,17 @@ Vector = {
 }
 setup_class(Vector)
 
-function Vector.new(x1, y1, x2, y2)
-    local obj = magic_new()
+function Vector:__init(x1, y1, x2, y2)
+    super().__init(self)
     assert(x1 ~= nil)
     assert(y1 ~= nil)
     assert(x2 ~= nil)
     assert(y2 ~= nil)
 
-    obj.x1 = x1
-    obj.y1 = y1
-    obj.x2 = x2
-    obj.y2 = y2
-
-    return obj
+    self.x1 = x1
+    self.y1 = y1
+    self.x2 = x2
+    self.y2 = y2
 end
 
 function Vector:dx()

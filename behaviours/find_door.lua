@@ -18,20 +18,18 @@ DoorQueryResult = {
     BEHIND = {},
 }
 
-function FindDoor.new()
-    local obj = magic_new()
-
-    return obj
+function FindDoor:__init(state)
+    super().__init(self, state)
 end
 
-function FindDoor:start(entity, state)
-    super().start(self, entity, state)
+function FindDoor:start(entity)
+    super().start(self, entity)
 
     self.i = 0
     self.all_doors = {}
     self.checked_doors = {}
     self.unreachable_doors = {}
-    self.door_cells = HashSet.new()
+    self.door_cells = HashSet()
     state:foreach("Door",
         function(door)
             self.door_cells = self.door_cells + door:active_cells()
@@ -50,7 +48,7 @@ function FindDoor:next_door()
         return nil
     end
     if iter_size(self.checked_doors) == #self.all_doors then
-        self.checked_doors = shallowcopy(self.unreachable_doors)
+        self.checked_doors = shallow_copy(self.unreachable_doors)
     end
 
     local i = love.math.random(#self.all_doors)
@@ -69,7 +67,7 @@ function FindDoor:next_door()
     end
 
     if self.entity.emote == nil then
-        self.entity.emote = QuestionEmote.new()
+        self.entity.emote = QuestionEmote()
     end
     return nil
 end
@@ -109,17 +107,18 @@ end
 
 function FindDoor:refresh_goto(door, state)
     local x, y = self:get_pos_to_progress(self.target_door, self.state)
-    self.goto_target = Goto.new(
+    self.goto_target = Goto(
+        self.state,
         x * self.state.level.cell_length_pixels,
         y * self.state.level.cell_length_pixels,
         1
     )
-    self.goto_target:start(self.entity, self.state)
+    self.goto_target:start(self.entity)
 end
 
 function FindDoor:query(door)
-    local e_cell = Cell.new(self.state.level:cell(self.entity.x, self.entity.y))
-    local d_cell = Cell.new(door.x, door.y)
+    local e_cell = Cell(self.state.level:cell(self.entity.x, self.entity.y))
+    local d_cell = Cell(door.x, door.y)
     local path_to_door = astar.path(
         e_cell,
         d_cell,
@@ -140,7 +139,7 @@ function FindDoor:query(door)
 
     -- Compare direction of last step of path to door with door direction.
     local p_cell = path_to_door[#path_to_door - 1]
-    local d = Vector.new(p_cell.x, p_cell.y, d_cell.x, d_cell.y)
+    local d = Vector(p_cell.x, p_cell.y, d_cell.x, d_cell.y)
     if self.state.escaping then
         if door.facing_rev == Direction.RIGHT then
             return in_front_behind(d:dx() < 0)

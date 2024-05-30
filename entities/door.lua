@@ -1,5 +1,4 @@
 require "entities.entity"
-require "direction"
 require "behaviours.door"
 require "sprite"
 
@@ -52,26 +51,24 @@ Door = {
 }
 setup_class(Door, Entity)
 
-function Door.new(x, y, facing, dead_end)
-    local obj = magic_new()
+function Door:__init(state, x, y, facing, dead_end)
+    super().__init(self, state)
 
-    obj.x = x
-    obj.y = y
-    obj.facing = facing
-    obj.facing_rev = facing
-    if not obj.dead_end then
-        obj.facing_rev = direction_opposite(facing)
+    self.x = x
+    self.y = y
+    self.facing = facing
+    self.facing_rev = facing
+    if not self.dead_end then
+        self.facing_rev = direction_opposite(facing)
     end
-    obj.is_open = false
-    obj.is_locked = false
-    obj.last_toggled = t_since(Door.ANIM_DURATION_SECONDS)
-    obj.behaviour = DoorBehaviour.new()
-
-    return obj
+    self.is_open = false
+    self.is_locked = false
+    self.last_toggled = t_since(Door.ANIM_DURATION_SECONDS)
+    self.behaviour = DoorBehaviour(state)
 end
 
-function Door.from_config(config)
-    return Door.new(config.x, config.y, config.direction)
+function Door.from_config(state, config)
+    return Door(state, config.position.x, config.position.y, config.direction)
 end
 
 function Door:is_transitioning()
@@ -117,14 +114,14 @@ end
 function Door:active_cells()
     if self.facing == Direction.UP or
        self.facing == Direction.DOWN then
-        return HashSet.new(
-            Cell.new(self.x, self.y),
-            Cell.new(self.x + 1, self.y)
+        return HashSet(
+            Cell(self.x, self.y),
+            Cell(self.x + 1, self.y)
         )
     else
-        return HashSet.new(
-            Cell.new(self.x, self.y),
-            Cell.new(self.x, self.y + 1)
+        return HashSet(
+            Cell(self.x, self.y),
+            Cell(self.x, self.y + 1)
         )
     end
 end

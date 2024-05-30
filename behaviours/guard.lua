@@ -12,28 +12,26 @@ GuardBehaviour = {
 }
 setup_class(GuardBehaviour, DefaultBehaviour)
 
-function GuardBehaviour.new(patrol_points)
-    local obj = magic_new(GuardBehaviour.patrol)
+function GuardBehaviour:__init(state, patrol_points)
+    super().__init(self, state, GuardBehaviour.patrol)
 
-    obj.patrol_behaviour = Patrol.new(patrol_points)
-
-    return obj
+    self.patrol_behaviour = Patrol(state, patrol_points)
 end
 
-function GuardBehaviour:start(entity, state)
-    super().start(self, entity, state)
+function GuardBehaviour:start(entity)
+    super().start(self, entity)
 
     local george = self.state:first("George")
     if george then
-        self.chase_behaviour = GotoTarget.new(george)
+        self.chase_behaviour = GotoTarget(state, george)
     end
 end
 
 function GuardBehaviour:investigate(x, y)
     if not is_type(self.entity.emote, QuestionEmote) then
-        self.entity.emote = QuestionEmote.new()
+        self.entity.emote = QuestionEmote()
     end
-    self:set_sub_behaviour(Investigate.new(x, y, 3, 3, 2))
+    self:set_sub_behaviour(Investigate(self.state, x, y, 3, 3, 2))
 end
 
 function GuardBehaviour:patrol()
@@ -44,7 +42,7 @@ end
 function GuardBehaviour:chase()
     if self.chase_behaviour and self.sub_behaviour ~= self.chase_behaviour then
         if not is_type(self.entity.emote, ExclaimationEmote) then
-            self.entity.emote = ExclaimationEmote.new()
+            self.entity.emote = ExclaimationEmote()
         end
         self:set_sub_behaviour(self.chase_behaviour)
     end
@@ -61,7 +59,7 @@ function GuardBehaviour:can_see_george()
         return false
     end
 
-    local george_cell = Cell.new(self.state.level:cell(george.x, george.y))
+    local george_cell = Cell(self.state.level:cell(george.x, george.y))
 
     return self.entity.vision:contains(george_cell)
 end
@@ -85,7 +83,7 @@ function GuardBehaviour:update(dt)
 
     if self:hit_george() then
         self.state:foreach("Jukebox", function(e) e:silence() end)
-        view:set_content(LoseScreen.new())
+        view:set_content(LoseScreen())
     end
 
     if self:can_see_george() then

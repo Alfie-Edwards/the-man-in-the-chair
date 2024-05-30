@@ -65,14 +65,14 @@ end
 
 function neighbor_nodes ( theNode, nodes, goal )
 	local neighbors = {
-		Cell.new(theNode.x - 1, theNode.y),
-		Cell.new(theNode.x + 1, theNode.y),
-		Cell.new(theNode.x, theNode.y - 1),
-		Cell.new(theNode.x, theNode.y + 1),
-		Cell.new(theNode.x - 1, theNode.y - 1),
-		Cell.new(theNode.x + 1, theNode.y + 1),
-		Cell.new(theNode.x + 1, theNode.y - 1),
-		Cell.new(theNode.x - 1, theNode.y + 1),
+		Cell(theNode.x - 1, theNode.y),
+		Cell(theNode.x + 1, theNode.y),
+		Cell(theNode.x, theNode.y - 1),
+		Cell(theNode.x, theNode.y + 1),
+		Cell(theNode.x - 1, theNode.y - 1),
+		Cell(theNode.x + 1, theNode.y + 1),
+		Cell(theNode.x + 1, theNode.y - 1),
+		Cell(theNode.x - 1, theNode.y + 1),
 	}
 	local i = 1
 	while i <= #neighbors do
@@ -103,14 +103,14 @@ end
 ----------------------------------------------------------------
 
 function a_star ( start, goal, nodes )
-	local closedset = HashSet.new()
-	local openset = HashSet.new(start)
-	local came_from = HashMap.new()
+	local closedset = HashSet()
+	local openset = HashSet(start)
+	local came_from = HashMap()
 
 	local MAX_IT = 100
 	local it = 1
 
-	local g_score, f_score = HashMap.new(), HashMap.new()
+	local g_score, f_score = HashMap(), HashMap()
 	g_score [ start ] = 0
 	f_score [ start ] = g_score [ start ] + heuristic_cost_estimate ( start, goal )
 
@@ -162,17 +162,17 @@ end
 
 function path ( start, goal, nodes, ignore_cache )
 
-	if not cachedPaths then cachedPaths = {} end
-	if not cachedPaths [ start ] then
-		cachedPaths [ start ] = {}
-	elseif cachedPaths [ start ] [ goal ] and not ignore_cache then
-		return cachedPaths [ start ] [ goal ]
+	if not cachedPaths then cachedPaths = HashMap() end
+	if not cachedPaths[start] then
+		cachedPaths[start] = HashMap()
+	elseif cachedPaths[start][goal] ~= nil and not ignore_cache then
+		return cachedPaths[start][goal]
 	end
 
-      local resPath = a_star ( start, goal, nodes )
-      if not cachedPaths [ start ] [ goal ] and not ignore_cache then
-              cachedPaths [ start ] [ goal ] = resPath
-      end
+  local resPath = a_star ( start, goal, nodes )
+  if cachedPaths[start][goal] == nil and not ignore_cache then
+    cachedPaths[start][goal] = resPath
+  end
 
 	return resPath
 end

@@ -1,4 +1,4 @@
-require "ui.simple_element"
+require "ui.layout_element"
 require "ui.image"
 require "screens.main_menu"
 
@@ -14,19 +14,17 @@ Section = {
     hold_frames = {},  -- { idx = seconds, ... }
 }
 setup_class(Section)
-function Section.new(section_type, frames_per_second, audio, hold_frames)
-    local obj = magic_new()
+function Section:__init(section_type, frames_per_second, audio, hold_frames)
+    super().__init(self)
 
     if hold_frames == nil then
         hold_frames = {}
     end
 
-    obj.section_type = section_type
-    obj.frames_per_second = frames_per_second
-    obj.audio = audio
-    obj.hold_frames = hold_frames
-
-    return obj
+    self.section_type = section_type
+    self.frames_per_second = frames_per_second
+    self.audio = audio
+    self.hold_frames = hold_frames
 end
 
 Cutscene = {
@@ -42,43 +40,41 @@ Cutscene = {
 
     finished = nil,
 }
-setup_class(Cutscene, SimpleElement)
+setup_class(Cutscene, LayoutElement)
 
-function Cutscene.new(frames, sections, bg_music, finished_callback)
-    local obj = magic_new()
+function Cutscene:__init(frames, sections, bg_music, finished_callback)
+    super().__init(self)
 
-    obj:set_properties(
+    self:set(
         {
             width = canvas:width(),
             height = canvas:height(),
         }
     )
 
-    obj.frames = frames
-    obj.sections = sections
-    obj.bg_music = bg_music
-    obj.finished_callback = finished_callback
+    self.frames = frames
+    self.sections = sections
+    self.bg_music = bg_music
+    self.finished_callback = finished_callback
 
-    if obj.bg_music ~= nil then
-        obj.bg_music:setLooping(true)
-        obj.bg_music:play()
+    if self.bg_music ~= nil then
+        self.bg_music:setLooping(true)
+        self.bg_music:play()
     end
 
-    obj:start_section(1)
+    self:start_section(1)
 
-    obj.finished = false
+    self.finished = false
 
-    local image = Image.new()
-    image:set_properties(
+    local image = Image()
+    image:set(
         {
             width = canvas:width(),
             height = canvas:height(),
         }
     )
-    obj:add_child(image)
-    obj.image = image
-
-    return obj
+    self:_add_visual_child(image)
+    self.image = image
 end
 
 function Cutscene.from_dir(dirname, sections, bg_music, finished_callback)
@@ -110,7 +106,7 @@ function Cutscene.from_dir(dirname, sections, bg_music, finished_callback)
         end
     end
 
-    return Cutscene.new(frames, sections, bg_music, finished_callback)
+    return Cutscene(frames, sections, bg_music, finished_callback)
 end
 
 function Cutscene:section_duration(section_num)

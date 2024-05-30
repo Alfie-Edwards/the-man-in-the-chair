@@ -14,26 +14,26 @@ SecurityCameraBehaviour = {
 }
 setup_class(SecurityCameraBehaviour, DefaultBehaviour)
 
-function SecurityCameraBehaviour.new(angle)
-    local obj = magic_new(SecurityCameraBehaviour.sweep)
+function SecurityCameraBehaviour:__init(state, angle)
+    super().__init(self, state, SecurityCameraBehaviour.sweep)
 
-    obj.angle = angle
-    obj.sweep_behaviour = Sweep.new(
-        obj.angle,
+    self.angle = angle
+    self.sweep_behaviour = Sweep(
+        state,
+        self.angle,
         SecurityCameraBehaviour.SWEEP_ANGLE,
         SecurityCameraBehaviour.WAIT_TIME,
         SecurityCameraBehaviour.SWEEP_SPEED
     )
-
-    return obj
 end
 
-function SecurityCameraBehaviour:start(entity, state)
-    super().start(self, entity, state)
+function SecurityCameraBehaviour:start(entity)
+    super().start(self, entity)
 
     local george = self.state:first("George")
     if george then
-        self.watch_behaviour = TurnToTarget.new(
+        self.watch_behaviour = TurnToTarget(
+            state,
             george,
             self.angle - SecurityCameraBehaviour.SWEEP_ANGLE / 2,
             self.angle + SecurityCameraBehaviour.SWEEP_ANGLE / 2
@@ -47,7 +47,7 @@ function SecurityCameraBehaviour:sweep()
 end
 
 function SecurityCameraBehaviour:watch()
-    self.entity.emote = ExclaimationEmote.new()
+    self.entity.emote = ExclaimationEmote()
     self:set_sub_behaviour(self.watch_behaviour)
 end
 
@@ -62,7 +62,7 @@ function SecurityCameraBehaviour:can_see_george()
         return
     end
 
-    local george_cell = Cell.new(self.state.level:cell(george.x, george.y))
+    local george_cell = Cell(self.state.level:cell(george.x, george.y))
 
     return self.entity.vision:contains(george_cell)
 end

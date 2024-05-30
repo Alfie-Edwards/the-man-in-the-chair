@@ -5,13 +5,11 @@ Turn = {
 }
 setup_class(Turn, Behaviour)
 
-function Turn.new(angle, sweep_speed)
-    local obj = magic_new()
+function Turn:__init(state, angle, sweep_speed)
+    super().__init(self, state)
 
-    obj.angle = angle
-    obj.sweep_speed = sweep_speed
-
-    return obj
+    self.angle = angle
+    self.sweep_speed = sweep_speed
 end
 
 function Turn:update(dt)

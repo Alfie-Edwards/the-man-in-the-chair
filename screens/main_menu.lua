@@ -1,43 +1,43 @@
-require "ui.simple_element"
+require "ui.layout_element"
 require "ui.image"
 require "ui.image_button"
 require "ui.triple_button"
-require "ui.table"
+require "ui.containers.grid_box"
 require "screens.game"
 
 MainMenu = {
     bg_music = nil,
 }
 
-setup_class(MainMenu, SimpleElement)
+setup_class(MainMenu, LayoutElement)
 
-function MainMenu.new()
-    local obj = magic_new()
+function MainMenu:__init()
+    super().__init(self)
 
-    obj:set_properties(
+    self:set(
         {
             width = canvas:width(),
             height = canvas:height(),
         }
     )
 
-    obj.bg_music = love.audio.newSource("assets/Sound/MusicMenu.wav", "stream")
-    obj.bg_music:setVolume(0.75)
-    obj.bg_music:setLooping(true)
-    obj.bg_music:play()
+    self.bg_music = love.audio.newSource("assets/Sound/MusicMenu.wav", "stream")
+    self.bg_music:setVolume(0.75)
+    self.bg_music:setLooping(true)
+    self.bg_music:play()
 
-    local bg = Image.new()
-    bg:set_properties(
+    local bg = Image()
+    bg:set(
         {
             image = assets:get_image("ui/TitleBackground"),
             width = canvas:width(),
             height = canvas:height(),
         }
     )
-    obj:add_child(bg)
+    self:_add_visual_child(bg)
 
-    local grid = Table.new()
-    grid:set_properties(
+    local grid = GridBox()
+    grid:set(
         {
             cols = 3,
             rows = 1,
@@ -45,13 +45,13 @@ function MainMenu.new()
             height = canvas:height(),
         }
     )
-    obj:add_child(grid)
+    self:_add_visual_child(grid)
 
-    local button_play = TripleButton.new()
+    local button_play = TripleButton()
     local button_play_img = assets:get_image("ui/ButtonPlayRelease")
     local button_play_aspect = button_play_img:getHeight() / button_play_img:getWidth()
     local button_play_width = 200
-    button_play:set_properties(
+    button_play:set(
         {
             default_image = button_play_img,
             hover_image = assets:get_image("ui/ButtonPlayHover"),
@@ -62,7 +62,7 @@ function MainMenu.new()
             y = grid:cell(1, 1).height / 2,
             width = button_play_width,
             height = button_play_width * button_play_aspect,
-            click = function()
+            mousereleased = function()
                 -- TODO #cleanup: assumes we're the view content; we don't have
                 --                access to `self`
                 if view:get_content() ~= nil and
@@ -75,30 +75,30 @@ function MainMenu.new()
                 view:set_content(Cutscene.from_dir(
                     "Cutscene/CutSceneTwo",
                     {
-                        Section.new(CutsceneSectionType.THROUGH, 8,
+                        Section(CutsceneSectionType.THROUGH, 8,
                             { agent = {
                                 source = love.audio.newSource("assets/Sound/AgentVoice.wav", "stream"),
                                 when = 2.8,
                                 loop = true,
                             }}),
-                        Section.new(CutsceneSectionType.THROUGH, 8),
-                        Section.new(CutsceneSectionType.THROUGH, 8),
+                        Section(CutsceneSectionType.THROUGH, 8),
+                        Section(CutsceneSectionType.THROUGH, 8),
                     },
                     cutscene_music,
                     function()
-                        view:set_content(Game.new())
+                        view:set_content(Game())
                     end
                 ))
             end,
         }
     )
-    grid:cell(1, 1):add_child(button_play)
+    grid:cell(1, 1):_add_visual_child(button_play)
 
-    local button_quit = TripleButton.new()
+    local button_quit = TripleButton()
     local button_quit_img = assets:get_image("ui/ButtonQuitRelease")
     local button_quit_aspect = button_play_img:getHeight() / button_play_img:getWidth()
     local button_quit_width = 200
-    button_quit:set_properties(
+    button_quit:set(
         {
             default_image = button_quit_img,
             hover_image = assets:get_image("ui/ButtonQuitHover"),
@@ -109,12 +109,10 @@ function MainMenu.new()
             y = grid:cell(3, 1).height / 2,
             width = button_quit_width,
             height = button_quit_width * button_quit_aspect,
-            click = function()
+            mousereleased = function()
                 love.event.quit()
             end,
         }
     )
-    grid:cell(3, 1):add_child(button_quit)
-
-    return obj
+    grid:cell(3, 1):_add_visual_child(button_quit)
 end

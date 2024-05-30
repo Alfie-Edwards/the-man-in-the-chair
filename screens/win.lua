@@ -1,37 +1,37 @@
-require "ui.simple_element"
+require "ui.layout_element"
 require "ui.image"
 require "ui.triple_button"
-require "ui.table"
+require "ui.containers.grid_box"
 
 WinScreen = {}
 
-setup_class(WinScreen, SimpleElement)
+setup_class(WinScreen, LayoutElement)
 
-function WinScreen.new()
-    local obj = magic_new()
+function WinScreen:__init()
+    super().__init(self)
 
-    obj:set_properties(
+    self:set(
         {
             width = canvas:width(),
             height = canvas:height(),
         }
     )
 
-    local bg = Image.new()
-    bg:set_properties(
+    local bg = Image()
+    bg:set(
         {
             image = assets:get_image("ui/YouDidntDie"),
             width = canvas:width(),
             height = canvas:height(),
-            click = function()
-                view:set_content(MainMenu.new())
+            mousereleased = function()
+                view:set_content(MainMenu())
             end
         }
     )
-    obj:add_child(bg)
+    self:_add_visual_child(bg)
 
-    local grid = Table.new()
-    grid:set_properties(
+    local grid = GridBox()
+    grid:set(
         {
             cols = 3,
             rows = 3,
@@ -39,7 +39,5 @@ function WinScreen.new()
             height = canvas:height(),
         }
     )
-    obj:add_child(grid)
-
-    return obj
+    self:_add_visual_child(grid)
 end

@@ -1,7 +1,8 @@
+jit.off()
 require "utils.utils"
 require "asset_cache"
 require "map"
-assets = AssetCache.new()
+assets = AssetCache("assets")
 require "pixelcanvas"
 require "ui.view"
 require "screens.editor"
@@ -10,35 +11,35 @@ require "screens.main_menu"
 require "screens.cutscene"
 
 function love.load()
+    -- enable holding backspace for typing.
+    love.keyboard.setKeyRepeat(true)
 
     -- setup rendering
     love.graphics.setDefaultFilter("nearest", "nearest", 0)
-    -- font = assets:get_font("font")
-    -- love.graphics.setFont(font)
     love.graphics.setLineJoin("miter")
     love.graphics.setLineStyle("rough")
-    canvas = PixelCanvas.new({ 768, 432 })
+    canvas = PixelCanvas({ 768, 432 })
 
-    view = View.new()
+    view = View(canvas:width(), canvas:height())
     -- local cutscene_music = love.audio.newSource("assets/Sound/MusicIntro.wav", "stream")
     -- cutscene_music:setVolume(0.75)
     -- view:set_content(Cutscene.from_dir(
     --     "Cutscene/CutSceneOne",
     --     {
-    --         Section.new(CutsceneSectionType.LOOP,    8,
+    --         Section(CutsceneSectionType.LOOP,    8,
     --             { eyebrows = {
     --                 source = love.audio.newSource("assets/Sound/EyebrowsVoice.wav", "stream"),
     --                 when = 0,
     --                 loop = true,
     --             }}),
-    --         Section.new(CutsceneSectionType.THROUGH, 8),
-    --         Section.new(CutsceneSectionType.THROUGH, 8,
+    --         Section(CutsceneSectionType.THROUGH, 8),
+    --         Section(CutsceneSectionType.THROUGH, 8,
     --             { eyebrows = {
     --                 source = love.audio.newSource("assets/Sound/EyebrowsVoice.wav", "stream"),
     --                 when = 1.9,
     --                 loop = true,
     --             }}),
-    --         Section.new(CutsceneSectionType.THROUGH, 8,
+    --         Section(CutsceneSectionType.THROUGH, 8,
     --             { george = {
     --                 source = love.audio.newSource("assets/Sound/GeorgeVoice.wav", "static"),
     --                 when = 3.5,
@@ -46,10 +47,10 @@ function love.load()
     --     },
     --     cutscene_music,
     --     function()
-    --         view:set_content(MainMenu.new())
+    --         view:set_content(MainMenu())
     --     end
     -- ))
-    view:set_content(Editor.new())
+    view:set_content(Editor())
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
@@ -58,9 +59,22 @@ function love.mousemoved(x, y, dx, dy, istouch)
     view:mousemoved(pos.x, pos.y, disp.x, disp.y)
 end
 
+function love.mousepressed(x, y, button)
+    local pos = canvas:screen_to_canvas(x, y)
+    view:mousepressed(pos.x, pos.y, button)
+end
+
 function love.mousereleased(x, y, button)
     local pos = canvas:screen_to_canvas(x, y)
-    view:click(pos.x, pos.y, button)
+    view:mousereleased(pos.x, pos.y, button)
+end
+
+function love.textinput(t)
+    view:textinput(t)
+end
+
+function love.wheelmoved(x, y)
+    view:wheelmoved(-x, -y)
 end
 
 function love.keypressed(key, scancode, isrepeat)

@@ -1,25 +1,24 @@
-require "ui.simple_element"
+require "ui.layout_element"
 require "ui.image"
 
-TripleButtonState = Enum.new("DEFAULT", "HOVER", "CLICK")
+TripleButtonState = Enum("DEFAULT", "HOVER", "CLICK")
 
 TripleButton = {
     default_image = nil,
     hover_image = nil,
     click_image = nil,
 
+    active_image = nil,
     active_image_elem = nil,
 }
 
-setup_class(TripleButton, SimpleElement)
+setup_class(TripleButton, LayoutElement)
 
-function TripleButton.new()
-    local obj = magic_new()
+function TripleButton:__init()
+    super().__init(self)
 
-    obj.active_image_elem = Image.new()
-    obj:add_child(obj.active_image_elem)
-
-    return obj
+    self.active_image_elem = Image()
+    self:_add_visual_child(self.active_image_elem)
 end
 
 function TripleButton:set_default_image(value)
@@ -58,39 +57,36 @@ function TripleButton:set_override_state(value)
     end
 end
 
-function TripleButton:draw()
-    super().draw(self)
-end
-
 function TripleButton:toggle()
     local temp = self.default_image
     self.default_image = self.click_image
     self.click_image = temp
 end
 
-function TripleButton:update(dt)
-    local mouse_x, mouse_y = self:get_mouse_pos()
-
-    local active_image = self.default_image
-    if self.override_state ~= nil then
-        if self.override_state == TripleButtonState.HOVER then
-            active_image = self.hover_image
-        elseif self.override_state == TripleButtonState.CLICK then
-            active_image = self.click_image
-        end
-    else
-        if self:contains(mouse_x, mouse_y) then
-            if love.mouse.isDown(1) then
-                active_image = self.click_image
-            else
-                active_image = self.hover_image
-            end
+function TripleButton:mousemoved(x, y, dx, dy)
+    if self.override_state == nil and self:contains(x, y) then
+        if love.mouse.isDown(1) then
+            self.active_image_elem.image = self.click_image
+        else
+            self.active_image_elem.image = self.hover_image
         end
     end
+end
 
-    self.active_image_elem:set_properties({
-        image = active_image,
-        width = self.width,
-        height = self.height,
-    })
+function TripleButton:update(dt)
+    local mouse_x, mouse_y = unpack(self.mouse_pos)
+    if self.override_state ~= nil then
+        if self.override_state == TripleButtonState.DEFAULT then
+            self.active_image_elem.image = self.default_image
+        elseif self.override_state == TripleButtonState.HOVER then
+            self.active_image_elem.image = self.hover_image
+        elseif self.override_state == TripleButtonState.CLICK then
+            self.active_image_elem.image = self.click_image
+        end
+    elseif not self:contains(mouse_x, mouse_y) then
+        self.active_image_elem.image = self.default_image
+    end
+
+    self.active_image_elem.width = self.bb:width()
+    self.active_image_elem.height = self.bb:height()
 end
